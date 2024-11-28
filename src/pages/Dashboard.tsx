@@ -20,36 +20,40 @@ const Dashboard = () => {
   const { data: trafficData = [] } = useQuery<TrafficData[]>({
     queryKey: ['trafficData'],
     queryFn: networkService.getTrafficData,
-    refetchInterval: 30000, // Refresh every 30 seconds
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to fetch traffic data",
-        variant: "destructive",
-      });
+    refetchInterval: 30000,
+    meta: {
+      onError: () => {
+        toast({
+          title: "Error",
+          description: "Failed to fetch traffic data",
+          variant: "destructive",
+        });
+      },
     },
   });
 
   const { data: recentAlerts = [] } = useQuery<NetworkAlert[]>({
     queryKey: ['recentAlerts'],
     queryFn: networkService.getRecentAlerts,
-    refetchInterval: 15000, // Refresh every 15 seconds
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to fetch alerts",
-        variant: "destructive",
-      });
+    refetchInterval: 15000,
+    meta: {
+      onError: () => {
+        toast({
+          title: "Error",
+          description: "Failed to fetch alerts",
+          variant: "destructive",
+        });
+      },
     },
   });
 
-  const { data: activeConnections = 0 } = useQuery({
+  const { data: activeConnections = 0 } = useQuery<number>({
     queryKey: ['activeConnections'],
     queryFn: networkService.getActiveConnections,
     refetchInterval: 10000,
   });
 
-  const { data: blockedIPs = 0 } = useQuery({
+  const { data: blockedIPs = 0 } = useQuery<number>({
     queryKey: ['blockedIPs'],
     queryFn: networkService.getBlockedIPs,
     refetchInterval: 10000,
@@ -77,7 +81,7 @@ const Dashboard = () => {
               <AlertCircle className="h-8 w-8 text-warning" />
               <div>
                 <p className="text-sm text-muted-foreground">Recent Alerts</p>
-                <p className="text-2xl font-bold text-foreground">{recentAlerts.length}</p>
+                <p className="text-2xl font-bold text-foreground">{(recentAlerts as NetworkAlert[]).length}</p>
               </div>
             </div>
           </Card>
@@ -118,7 +122,7 @@ const Dashboard = () => {
         <Card className="p-6 bg-secondary">
           <h2 className="text-lg font-semibold mb-4">Recent Alerts</h2>
           <div className="space-y-4">
-            {recentAlerts.map((alert) => (
+            {(recentAlerts as NetworkAlert[]).map((alert) => (
               <div
                 key={alert.id}
                 className="flex items-center justify-between p-4 bg-background rounded-lg"
