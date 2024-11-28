@@ -9,39 +9,51 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { AlertCircle, Shield, Activity, Globe } from "lucide-react";
-
-// Mock data - replace with real data later
-const trafficData = [
-  { time: "00:00", packets: 400 },
-  { time: "04:00", packets: 300 },
-  { time: "08:00", packets: 600 },
-  { time: "12:00", packets: 800 },
-  { time: "16:00", packets: 500 },
-  { time: "20:00", packets: 400 },
-];
-
-const recentAlerts = [
-  {
-    id: 1,
-    type: "Port Scan",
-    source: "192.168.1.100",
-    timestamp: "2024-02-20 10:30:45",
-    severity: "high",
-  },
-  {
-    id: 2,
-    type: "Suspicious Traffic",
-    source: "10.0.0.15",
-    timestamp: "2024-02-20 10:28:30",
-    severity: "medium",
-  },
-];
+import { AlertCircle, Shield, Activity } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { networkService, NetworkAlert, TrafficData } from "@/services/networkService";
+import { useToast } from "@/components/ui/use-toast";
 
 const Dashboard = () => {
-  const [activeConnections, setActiveConnections] = useState(42);
-  const [alertsToday, setAlertsToday] = useState(15);
-  const [blockedIPs, setBlockedIPs] = useState(7);
+  const { toast } = useToast();
+
+  const { data: trafficData = [] } = useQuery<TrafficData[]>({
+    queryKey: ['trafficData'],
+    queryFn: networkService.getTrafficData,
+    refetchInterval: 30000, // Refresh every 30 seconds
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to fetch traffic data",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const { data: recentAlerts = [] } = useQuery<NetworkAlert[]>({
+    queryKey: ['recentAlerts'],
+    queryFn: networkService.getRecentAlerts,
+    refetchInterval: 15000, // Refresh every 15 seconds
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to fetch alerts",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const { data: activeConnections = 0 } = useQuery({
+    queryKey: ['activeConnections'],
+    queryFn: networkService.getActiveConnections,
+    refetchInterval: 10000,
+  });
+
+  const { data: blockedIPs = 0 } = useQuery({
+    queryKey: ['blockedIPs'],
+    queryFn: networkService.getBlockedIPs,
+    refetchInterval: 10000,
+  });
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -64,8 +76,8 @@ const Dashboard = () => {
             <div className="flex items-center space-x-4">
               <AlertCircle className="h-8 w-8 text-warning" />
               <div>
-                <p className="text-sm text-muted-foreground">Alerts Today</p>
-                <p className="text-2xl font-bold text-foreground">{alertsToday}</p>
+                <p className="text-sm text-muted-foreground">Recent Alerts</p>
+                <p className="text-2xl font-bold text-foreground">{recentAlerts.length}</p>
               </div>
             </div>
           </Card>
