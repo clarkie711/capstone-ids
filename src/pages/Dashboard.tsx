@@ -14,11 +14,12 @@ import { useQuery } from "@tanstack/react-query";
 import { networkService } from "@/services/networkService";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
+import { NetworkThreat } from "@/services/networkService";
 
 const Dashboard = () => {
   const { toast } = useToast();
   const [realtimeTraffic, setRealtimeTraffic] = useState([]);
-  const [threats, setThreats] = useState([]);
+  const [threats, setThreats] = useState<NetworkThreat[]>([]);
 
   const { data: trafficData = [] } = useQuery({
     queryKey: ['trafficData'],
@@ -99,7 +100,7 @@ const Dashboard = () => {
           schema: 'public',
           table: 'network_threats'
         },
-        (payload) => {
+        (payload: { new: NetworkThreat }) => {
           const threat = payload.new;
           setThreats(current => [...current, threat]);
           
