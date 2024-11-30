@@ -13,9 +13,11 @@ import { AlertCircle, Shield, Activity } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { networkService, NetworkAlert, TrafficData } from "@/services/networkService";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/lib/supabase";
 
 const Dashboard = () => {
   const { toast } = useToast();
+  const [realtimeTraffic, setRealtimeTraffic] = useState<TrafficData[]>([]);
 
   const { data: trafficData = [] } = useQuery<TrafficData[]>({
     queryKey: ['trafficData'],
@@ -59,6 +61,44 @@ const Dashboard = () => {
     refetchInterval: 10000,
   });
 
+  useEffect(() => {
+    // Initialize with existing data
+    setRealtimeTraffic(trafficData);
+
+    // Subscribe to real-time changes
+    const channel = supabase
+      .channel('traffic_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'traffic_data'
+        },
+        (payload) => {
+          setRealtimeTraffic(current => {
+            const newData = [...current];
+            // Keep only the last 24 data points
+            if (newData.length >= 24) {
+              newData.shift();
+            }
+            newData.push(payload.new as TrafficData);
+            return newData;
+          });
+
+          toast({
+            title: "Traffic Update",
+            description: `New traffic data received: ${payload.new.packets} packets`,
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [trafficData, toast]);
+
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -81,7 +121,7 @@ const Dashboard = () => {
               <AlertCircle className="h-8 w-8 text-warning" />
               <div>
                 <p className="text-sm text-muted-foreground">Recent Alerts</p>
-                <p className="text-2xl font-bold text-foreground">{(recentAlerts as NetworkAlert[]).length}</p>
+                <p className="text-2xl font-bold text-foreground">{recentAlerts.length}</p>
               </div>
             </div>
           </Card>
@@ -99,10 +139,10 @@ const Dashboard = () => {
 
         {/* Traffic Chart */}
         <Card className="p-6 bg-secondary">
-          <h2 className="text-lg font-semibold mb-4">Network Traffic</h2>
+          <h2 className="text-lg font-semibold mb-4">Network Traffic (Real-time)</h2>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trafficData}>
+              <LineChart data={realtimeTraffic}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="time" />
                 <YAxis />
@@ -122,7 +162,7 @@ const Dashboard = () => {
         <Card className="p-6 bg-secondary">
           <h2 className="text-lg font-semibold mb-4">Recent Alerts</h2>
           <div className="space-y-4">
-            {(recentAlerts as NetworkAlert[]).map((alert) => (
+            {recentAlerts.map((alert) => (
               <div
                 key={alert.id}
                 className="flex items-center justify-between p-4 bg-background rounded-lg"
