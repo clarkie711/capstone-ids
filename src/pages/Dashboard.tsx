@@ -64,14 +64,16 @@ const Dashboard = () => {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'traffic_data' },
         (payload: RealtimePostgresChangesPayload<TrafficData>) => {
-          setRealtimeTraffic(current => {
-            const newData = [...current];
-            if (newData.length >= 24) {
-              newData.shift();
-            }
-            newData.push(payload.new);
-            return newData;
-          });
+          if (payload.new && 'time' in payload.new && 'packets' in payload.new) {
+            setRealtimeTraffic(current => {
+              const newData = [...current];
+              if (newData.length >= 24) {
+                newData.shift();
+              }
+              newData.push(payload.new as TrafficData);
+              return newData;
+            });
+          }
         }
       )
       .subscribe();
@@ -82,14 +84,19 @@ const Dashboard = () => {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'network_threats' },
         (payload: RealtimePostgresChangesPayload<NetworkThreat>) => {
-          const threat = payload.new;
-          setThreats(current => [...current, threat]);
-          
-          toast({
-            title: `New ${threat.threat_type} Detected`,
-            description: `From IP: ${threat.source_ip} (Confidence: ${Math.round(threat.confidence_score * 100)}%)`,
-            variant: threat.confidence_score > 0.7 ? "destructive" : "default",
-          });
+          if (payload.new && 
+              'threat_type' in payload.new && 
+              'source_ip' in payload.new && 
+              'confidence_score' in payload.new) {
+            const threat = payload.new as NetworkThreat;
+            setThreats(current => [...current, threat]);
+            
+            toast({
+              title: `New ${threat.threat_type} Detected`,
+              description: `From IP: ${threat.source_ip} (Confidence: ${Math.round(threat.confidence_score * 100)}%)`,
+              variant: threat.confidence_score > 0.7 ? "destructive" : "default",
+            });
+          }
         }
       )
       .subscribe();
