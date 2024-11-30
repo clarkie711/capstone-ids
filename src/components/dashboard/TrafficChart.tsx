@@ -16,46 +16,13 @@ interface TrafficChartProps {
 }
 
 export const TrafficChart = ({ data }: TrafficChartProps) => {
-  const [ntpOffset, setNtpOffset] = useState<number>(0);
   const [chartData, setChartData] = useState<TrafficData[]>(data);
 
-  // Synchronize with NTP server and calculate offset
+  // Update chart data with server timestamps
   useEffect(() => {
-    const syncWithNTP = async () => {
-      try {
-        const startTime = Date.now();
-        const response = await fetch('https://worldtimeapi.org/api/ip');
-        const endTime = Date.now();
-        const roundTripTime = endTime - startTime;
-        
-        if (response.ok) {
-          const data = await response.json();
-          const serverTime = new Date(data.datetime).getTime();
-          const clientTime = Date.now();
-          
-          // Calculate offset considering network latency
-          const offset = serverTime - (clientTime - roundTripTime / 2);
-          setNtpOffset(offset);
-        }
-      } catch (error) {
-        console.error('Failed to sync with NTP:', error);
-      }
-    };
-
-    syncWithNTP();
-    const intervalId = setInterval(syncWithNTP, 300000); // Resync every 5 minutes
-
-    return () => clearInterval(intervalId);
-  }, []);
-
-  // Update chart data with correct timestamps
-  useEffect(() => {
-    const adjustedData = data.map(item => ({
-      ...item,
-      time: new Date(new Date(item.time).getTime() + ntpOffset).toISOString(),
-    }));
-    setChartData(adjustedData);
-  }, [data, ntpOffset]);
+    // Use the data directly since Supabase already provides server timestamps
+    setChartData(data);
+  }, [data]);
 
   return (
     <Card className="p-6 bg-secondary">
