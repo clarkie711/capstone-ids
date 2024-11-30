@@ -72,11 +72,7 @@ const Dashboard = () => {
       .channel('traffic_changes')
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'traffic_data'
-        },
+        { event: '*', schema: 'public', table: 'traffic_data' },
         (payload) => {
           setRealtimeTraffic(current => {
             const newData = [...current];
@@ -95,11 +91,7 @@ const Dashboard = () => {
       .channel('threat_changes')
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'network_threats'
-        },
+        { event: '*', schema: 'public', table: 'network_threats' },
         (payload: { new: NetworkThreat }) => {
           const threat = payload.new;
           setThreats(current => [...current, threat]);
