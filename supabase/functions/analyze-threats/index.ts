@@ -6,6 +6,26 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+async function getIpLocation(ip: string) {
+  try {
+    const response = await fetch(`http://ip-api.com/json/${ip}`);
+    const data = await response.json();
+    if (data.status === 'success') {
+      return {
+        country: data.country,
+        city: data.city,
+        lat: data.lat,
+        lon: data.lon,
+        region: data.regionName
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('Error fetching IP location:', error);
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -23,15 +43,19 @@ serve(async (req) => {
     // Simple threat analysis logic
     const confidenceScore = calculateThreatScore(traffic_pattern)
     const threatType = determineThreatType(traffic_pattern)
+    
+    // Fetch IP location
+    const location = await getIpLocation(source_ip)
 
-    // Insert the threat data
+    // Insert the threat data with location
     const { data, error } = await supabaseClient
       .from('network_threats')
       .insert({
         threat_type: threatType,
         source_ip,
         confidence_score: confidenceScore,
-        details: traffic_pattern
+        details: traffic_pattern,
+        location
       })
       .select()
       .single()

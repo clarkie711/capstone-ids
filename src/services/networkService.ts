@@ -26,6 +26,13 @@ export interface NetworkThreat {
   is_false_positive: boolean;
   details: any;
   detected_at: string;
+  location?: {
+    country: string;
+    city: string;
+    lat: number;
+    lon: number;
+    region: string;
+  };
 }
 
 export const networkService = {

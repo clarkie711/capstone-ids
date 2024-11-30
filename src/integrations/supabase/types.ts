@@ -79,6 +79,7 @@ export type Database = {
           detected_at: string | null
           id: number
           is_false_positive: boolean | null
+          location: Json | null
           source_ip: string
           threat_type: string
         }
@@ -88,6 +89,7 @@ export type Database = {
           detected_at?: string | null
           id?: number
           is_false_positive?: boolean | null
+          location?: Json | null
           source_ip: string
           threat_type: string
         }
@@ -97,6 +99,7 @@ export type Database = {
           detected_at?: string | null
           id?: number
           is_false_positive?: boolean | null
+          location?: Json | null
           source_ip?: string
           threat_type?: string
         }

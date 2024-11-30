@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { NetworkThreat } from "@/services/networkService";
+import { MapPin } from "lucide-react";
 
 interface ThreatMonitoringProps {
   threats: NetworkThreat[];
@@ -18,11 +19,19 @@ export const ThreatMonitoring = ({ threats, onFalsePositive }: ThreatMonitoringP
               key={threat.id}
               className="flex items-center justify-between p-4 bg-background rounded-lg"
             >
-              <div>
+              <div className="space-y-2">
                 <p className="font-medium text-foreground">{threat.threat_type}</p>
                 <p className="text-sm text-muted-foreground">
                   Source IP: {threat.source_ip}
                 </p>
+                {threat.location && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <MapPin className="h-4 w-4" />
+                    <span>
+                      {threat.location.city}, {threat.location.region}, {threat.location.country}
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-4">
                 <span className={`px-2 py-1 rounded text-xs ${
