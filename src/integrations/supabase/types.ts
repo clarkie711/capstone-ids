@@ -72,6 +72,36 @@ export type Database = {
         }
         Relationships: []
       }
+      network_threats: {
+        Row: {
+          confidence_score: number
+          details: Json | null
+          detected_at: string | null
+          id: number
+          is_false_positive: boolean | null
+          source_ip: string
+          threat_type: string
+        }
+        Insert: {
+          confidence_score: number
+          details?: Json | null
+          detected_at?: string | null
+          id?: number
+          is_false_positive?: boolean | null
+          source_ip: string
+          threat_type: string
+        }
+        Update: {
+          confidence_score?: number
+          details?: Json | null
+          detected_at?: string | null
+          id?: number
+          is_false_positive?: boolean | null
+          source_ip?: string
+          threat_type?: string
+        }
+        Relationships: []
+      }
       traffic_data: {
         Row: {
           id: number

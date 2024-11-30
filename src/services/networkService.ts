@@ -18,6 +18,16 @@ export interface TrafficData {
   packets: number;
 }
 
+export interface NetworkThreat {
+  id: number;
+  threat_type: string;
+  source_ip: string;
+  confidence_score: number;
+  is_false_positive: boolean;
+  details: any;
+  detected_at: string;
+}
+
 export const networkService = {
   async getTrafficData(): Promise<TrafficData[]> {
     const { data, error } = await supabase
@@ -58,5 +68,16 @@ export const networkService = {
 
     if (error) throw error;
     return count || 0;
+  },
+
+  async getActiveThreats(): Promise<NetworkThreat[]> {
+    const { data, error } = await supabase
+      .from('network_threats')
+      .select('*')
+      .eq('is_false_positive', false)
+      .order('detected_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
   }
 };

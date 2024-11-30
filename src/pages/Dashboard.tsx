@@ -11,15 +11,16 @@ import {
 } from "recharts";
 import { AlertCircle, Shield, Activity } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { networkService, NetworkAlert, TrafficData } from "@/services/networkService";
+import { networkService } from "@/services/networkService";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
 
 const Dashboard = () => {
   const { toast } = useToast();
-  const [realtimeTraffic, setRealtimeTraffic] = useState<TrafficData[]>([]);
+  const [realtimeTraffic, setRealtimeTraffic] = useState([]);
+  const [threats, setThreats] = useState([]);
 
-  const { data: trafficData = [] } = useQuery<TrafficData[]>({
+  const { data: trafficData = [] } = useQuery({
     queryKey: ['trafficData'],
     queryFn: networkService.getTrafficData,
     refetchInterval: 30000,
@@ -34,7 +35,7 @@ const Dashboard = () => {
     },
   });
 
-  const { data: recentAlerts = [] } = useQuery<NetworkAlert[]>({
+  const { data: recentAlerts = [] } = useQuery({
     queryKey: ['recentAlerts'],
     queryFn: networkService.getRecentAlerts,
     refetchInterval: 15000,
@@ -49,13 +50,13 @@ const Dashboard = () => {
     },
   });
 
-  const { data: activeConnections = 0 } = useQuery<number>({
+  const { data: activeConnections = 0 } = useQuery({
     queryKey: ['activeConnections'],
     queryFn: networkService.getActiveConnections,
     refetchInterval: 10000,
   });
 
-  const { data: blockedIPs = 0 } = useQuery<number>({
+  const { data: blockedIPs = 0 } = useQuery({
     queryKey: ['blockedIPs'],
     queryFn: networkService.getBlockedIPs,
     refetchInterval: 10000,
@@ -64,9 +65,9 @@ const Dashboard = () => {
   useEffect(() => {
     // Initialize with existing data
     setRealtimeTraffic(trafficData);
-
-    // Subscribe to real-time changes
-    const channel = supabase
+    
+    // Subscribe to real-time traffic changes
+    const trafficChannel = supabase
       .channel('traffic_changes')
       .on(
         'postgres_changes',
@@ -78,26 +79,71 @@ const Dashboard = () => {
         (payload) => {
           setRealtimeTraffic(current => {
             const newData = [...current];
-            // Keep only the last 24 data points
             if (newData.length >= 24) {
               newData.shift();
             }
-            newData.push(payload.new as TrafficData);
+            newData.push(payload.new);
             return newData;
           });
+        }
+      )
+      .subscribe();
 
+    // Subscribe to real-time threat detection
+    const threatChannel = supabase
+      .channel('threat_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'network_threats'
+        },
+        (payload) => {
+          const threat = payload.new;
+          setThreats(current => [...current, threat]);
+          
           toast({
-            title: "Traffic Update",
-            description: `New traffic data received: ${payload.new.packets} packets`,
+            title: `New ${threat.threat_type} Detected`,
+            description: `From IP: ${threat.source_ip} (Confidence: ${Math.round(threat.confidence_score * 100)}%)`,
+            variant: threat.confidence_score > 0.7 ? "destructive" : "default",
           });
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(trafficChannel);
+      supabase.removeChannel(threatChannel);
     };
   }, [trafficData, toast]);
+
+  const handleFalsePositive = async (threatId: number) => {
+    const { error } = await supabase
+      .from('network_threats')
+      .update({ is_false_positive: true })
+      .eq('id', threatId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to mark as false positive",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: "Threat marked as false positive",
+      });
+      setThreats(current =>
+        current.map(threat =>
+          threat.id === threatId
+            ? { ...threat, is_false_positive: true }
+            : threat
+        )
+      );
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -158,34 +204,39 @@ const Dashboard = () => {
           </div>
         </Card>
 
-        {/* Recent Alerts */}
+        {/* Threat Monitoring */}
         <Card className="p-6 bg-secondary">
-          <h2 className="text-lg font-semibold mb-4">Recent Alerts</h2>
+          <h2 className="text-lg font-semibold mb-4">Active Threats</h2>
           <div className="space-y-4">
-            {recentAlerts.map((alert) => (
-              <div
-                key={alert.id}
-                className="flex items-center justify-between p-4 bg-background rounded-lg"
-              >
-                <div>
-                  <p className="font-medium text-foreground">{alert.type}</p>
-                  <p className="text-sm text-muted-foreground">
-                    Source: {alert.source}
-                  </p>
+            {threats
+              .filter(threat => !threat.is_false_positive)
+              .map((threat) => (
+                <div
+                  key={threat.id}
+                  className="flex items-center justify-between p-4 bg-background rounded-lg"
+                >
+                  <div>
+                    <p className="font-medium text-foreground">{threat.threat_type}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Source IP: {threat.source_ip}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      threat.confidence_score > 0.7
+                        ? "bg-destructive text-destructive-foreground"
+                        : "bg-warning text-warning-foreground"
+                    }`}>
+                      {Math.round(threat.confidence_score * 100)}% confidence
+                    </span>
+                    <button
+                      onClick={() => handleFalsePositive(threat.id)}
+                      className="text-sm text-muted-foreground hover:text-foreground"
+                    >
+                      Mark as False Positive
+                    </button>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-muted-foreground">{alert.timestamp}</p>
-                  <span
-                    className={`inline-block px-2 py-1 rounded text-xs ${
-                      alert.severity === "high"
-                        ? "bg-danger text-white"
-                        : "bg-warning text-black"
-                    }`}
-                  >
-                    {alert.severity}
-                  </span>
-                </div>
-              </div>
             ))}
           </div>
         </Card>
