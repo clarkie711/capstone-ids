@@ -10,6 +10,7 @@ import {
 } from "recharts";
 import { useEffect, useState } from "react";
 import { TrafficData } from "@/services/networkService";
+import { format } from "date-fns";
 
 interface TrafficChartProps {
   data: TrafficData[];
@@ -35,14 +36,14 @@ export const TrafficChart = ({ data }: TrafficChartProps) => {
               dataKey="time" 
               tickFormatter={(time) => {
                 const date = new Date(time);
-                return `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
+                return format(date, 'MM/dd HH:mm:ss');
               }}
             />
             <YAxis />
             <Tooltip 
               labelFormatter={(label) => {
                 const date = new Date(label);
-                return `Time: ${date.toLocaleTimeString()}`;
+                return `Date: ${format(date, 'MMM dd, yyyy')} Time: ${format(date, 'HH:mm:ss')}`;
               }}
             />
             <Line
