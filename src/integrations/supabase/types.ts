@@ -9,7 +9,87 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      active_connections: {
+        Row: {
+          count: number
+          id: number
+          updated_at: string | null
+        }
+        Insert: {
+          count?: number
+          id?: number
+          updated_at?: string | null
+        }
+        Update: {
+          count?: number
+          id?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      alerts: {
+        Row: {
+          id: number
+          severity: string
+          source: string
+          timestamp: string | null
+          type: string
+        }
+        Insert: {
+          id?: number
+          severity: string
+          source: string
+          timestamp?: string | null
+          type: string
+        }
+        Update: {
+          id?: number
+          severity?: string
+          source?: string
+          timestamp?: string | null
+          type?: string
+        }
+        Relationships: []
+      }
+      blocked_ips: {
+        Row: {
+          blocked_at: string | null
+          id: number
+          ip_address: string
+          reason: string | null
+        }
+        Insert: {
+          blocked_at?: string | null
+          id?: number
+          ip_address: string
+          reason?: string | null
+        }
+        Update: {
+          blocked_at?: string | null
+          id?: number
+          ip_address?: string
+          reason?: string | null
+        }
+        Relationships: []
+      }
+      traffic_data: {
+        Row: {
+          id: number
+          packets: number
+          time: string | null
+        }
+        Insert: {
+          id?: number
+          packets?: number
+          time?: string | null
+        }
+        Update: {
+          id?: number
+          packets?: number
+          time?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
