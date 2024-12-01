@@ -6,6 +6,7 @@ import { networkService, NetworkThreat, TrafficData } from "@/services/networkSe
 import { StatsOverview } from "@/components/dashboard/StatsOverview";
 import { TrafficChart } from "@/components/dashboard/TrafficChart";
 import { ThreatMonitoring } from "@/components/dashboard/ThreatMonitoring";
+import { SimulateAttack } from "@/components/dashboard/SimulateAttack";
 import { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
 const Dashboard = () => {
@@ -137,7 +138,10 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        <h1 className="text-2xl font-bold text-foreground">Network Security Dashboard</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-foreground">Network Security Dashboard</h1>
+          <SimulateAttack />
+        </div>
         
         <StatsOverview
           activeConnections={activeConnections}
