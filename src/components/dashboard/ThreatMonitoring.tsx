@@ -45,7 +45,7 @@ export const ThreatMonitoring = ({ threats, onFalsePositive }: ThreatMonitoringP
               className="flex flex-col bg-background rounded-lg overflow-hidden"
             >
               <div className="flex items-center justify-between p-4">
-                <div className="space-y-2">
+                <div className="space-y-2 w-full">
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="h-4 w-4 text-destructive" />
                     <p className="font-medium text-foreground">{threat.threat_type}</p>
@@ -53,46 +53,52 @@ export const ThreatMonitoring = ({ threats, onFalsePositive }: ThreatMonitoringP
                   <p className="text-sm text-muted-foreground">
                     Source IP: {threat.source_ip}
                   </p>
-                  {threat.location && (
-                    <div className="bg-secondary/50 p-3 rounded-lg space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Globe2 className="h-5 w-5 text-primary" />
-                        <span className="font-medium text-foreground">
-                          Location Details
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <MapPin className="h-4 w-4" />
-                          <span>
-                            {threat.location.city}, {threat.location.region}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <Globe2 className="h-4 w-4" />
-                          <span>{threat.location.country}</span>
-                        </div>
-                        {threat.location.lat && threat.location.lon && (
-                          <div className="flex items-center gap-2 text-muted-foreground col-span-2">
+                  <div className="bg-secondary/50 p-3 rounded-lg space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Globe2 className="h-5 w-5 text-primary" />
+                      <span className="font-medium text-foreground">
+                        Location Details
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                      {threat.location ? (
+                        <>
+                          <div className="flex items-center gap-2 text-muted-foreground">
                             <MapPin className="h-4 w-4" />
                             <span>
-                              Coordinates: {formatCoordinates(threat.location.lat, threat.location.lon)}
+                              {threat.location.city || 'Unknown City'}, {threat.location.region || 'Unknown Region'}
                             </span>
-                            <a
-                              href={`https://www.google.com/maps?q=${threat.location.lat},${threat.location.lon}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary hover:underline ml-2"
-                            >
-                              View on Map
-                            </a>
                           </div>
-                        )}
-                      </div>
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Globe2 className="h-4 w-4" />
+                            <span>{threat.location.country || 'Unknown Country'}</span>
+                          </div>
+                          {threat.location.lat && threat.location.lon && (
+                            <div className="flex items-center gap-2 text-muted-foreground col-span-2">
+                              <MapPin className="h-4 w-4" />
+                              <span>
+                                Coordinates: {formatCoordinates(threat.location.lat, threat.location.lon)}
+                              </span>
+                              <a
+                                href={`https://www.google.com/maps?q=${threat.location.lat},${threat.location.lon}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:underline ml-2"
+                              >
+                                View on Map
+                              </a>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="col-span-2 text-muted-foreground italic">
+                          Location information unavailable
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 ml-4">
                   <span className={`px-2 py-1 rounded text-xs ${
                     threat.confidence_score > 0.7
                       ? "bg-destructive text-destructive-foreground"
@@ -130,7 +136,7 @@ export const ThreatMonitoring = ({ threats, onFalsePositive }: ThreatMonitoringP
                 </div>
               )}
             </div>
-        ))}
+          ))}
       </div>
     </Card>
   );
