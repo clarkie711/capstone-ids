@@ -30,7 +30,7 @@ export const ThreatMonitoring = ({ threats, onFalsePositive }: ThreatMonitoringP
   };
 
   const formatCoordinates = (lat: number, lon: number) => {
-    return `${lat.toFixed(4)}°${lat >= 0 ? 'N' : 'S'}, ${lon.toFixed(4)}°${lon >= 0 ? 'E' : 'W'}`;
+    return `${Math.abs(lat).toFixed(4)}°${lat >= 0 ? 'N' : 'S'}, ${Math.abs(lon).toFixed(4)}°${lon >= 0 ? 'E' : 'W'}`;
   };
 
   return (
