@@ -6,6 +6,35 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+async function getIpLocation() {
+  // Generate random coordinates for simulation
+  const locations = [
+    {
+      country: 'United States',
+      city: 'Los Angeles',
+      region: 'California',
+      lat: 34.0522,
+      lon: -118.2437
+    },
+    {
+      country: 'United Kingdom',
+      city: 'London',
+      region: 'England',
+      lat: 51.5074,
+      lon: -0.1278
+    },
+    {
+      country: 'Japan',
+      city: 'Tokyo',
+      region: 'Kanto',
+      lat: 35.6762,
+      lon: 139.6503
+    }
+  ];
+  
+  return locations[Math.floor(Math.random() * locations.length)];
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -25,7 +54,7 @@ serve(async (req) => {
     }
 
     // Simulate different types of attacks
-    const attacks = [
+    const attacks = await Promise.all([
       {
         threat_type: 'DDoS',
         source_ip: generateRandomIP(),
@@ -33,7 +62,8 @@ serve(async (req) => {
         details: {
           requestFrequency: 1500,
           timestamp: new Date().toISOString()
-        }
+        },
+        location: await getIpLocation()
       },
       {
         threat_type: 'Data Exfiltration',
@@ -42,7 +72,8 @@ serve(async (req) => {
         details: {
           payloadSize: 15000000, // 15MB
           timestamp: new Date().toISOString()
-        }
+        },
+        location: await getIpLocation()
       },
       {
         threat_type: 'Brute Force',
@@ -51,9 +82,10 @@ serve(async (req) => {
         details: {
           errorRate: 0.8,
           timestamp: new Date().toISOString()
-        }
+        },
+        location: await getIpLocation()
       }
-    ]
+    ]);
 
     // Insert simulated attacks
     for (const attack of attacks) {
@@ -63,7 +95,7 @@ serve(async (req) => {
 
       if (error) throw error
       
-      console.log(`Simulated ${attack.threat_type} attack from ${attack.source_ip}`)
+      console.log(`Simulated ${attack.threat_type} attack from ${attack.source_ip} in ${attack.location.city}, ${attack.location.country}`)
     }
 
     return new Response(
