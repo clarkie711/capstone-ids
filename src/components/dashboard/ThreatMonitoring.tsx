@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { NetworkThreat } from "@/services/networkService";
-import { MapPin, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
+import { MapPin, AlertTriangle, ChevronDown, ChevronUp, Globe2 } from "lucide-react";
 import { useState } from "react";
 
 interface ThreatMonitoringProps {
@@ -29,6 +29,10 @@ export const ThreatMonitoring = ({ threats, onFalsePositive }: ThreatMonitoringP
     }
   };
 
+  const formatCoordinates = (lat: number, lon: number) => {
+    return `${lat.toFixed(4)}°${lat >= 0 ? 'N' : 'S'}, ${lon.toFixed(4)}°${lon >= 0 ? 'E' : 'W'}`;
+  };
+
   return (
     <Card className="p-6 bg-secondary">
       <h2 className="text-lg font-semibold mb-4">Active Threats</h2>
@@ -50,11 +54,41 @@ export const ThreatMonitoring = ({ threats, onFalsePositive }: ThreatMonitoringP
                     Source IP: {threat.source_ip}
                   </p>
                   {threat.location && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <MapPin className="h-4 w-4" />
-                      <span>
-                        {threat.location.city}, {threat.location.region}, {threat.location.country}
-                      </span>
+                    <div className="bg-secondary/50 p-3 rounded-lg space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Globe2 className="h-5 w-5 text-primary" />
+                        <span className="font-medium text-foreground">
+                          Location Details
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <MapPin className="h-4 w-4" />
+                          <span>
+                            {threat.location.city}, {threat.location.region}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Globe2 className="h-4 w-4" />
+                          <span>{threat.location.country}</span>
+                        </div>
+                        {threat.location.lat && threat.location.lon && (
+                          <div className="flex items-center gap-2 text-muted-foreground col-span-2">
+                            <MapPin className="h-4 w-4" />
+                            <span>
+                              Coordinates: {formatCoordinates(threat.location.lat, threat.location.lon)}
+                            </span>
+                            <a
+                              href={`https://www.google.com/maps?q=${threat.location.lat},${threat.location.lon}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary hover:underline ml-2"
+                            >
+                              View on Map
+                            </a>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
