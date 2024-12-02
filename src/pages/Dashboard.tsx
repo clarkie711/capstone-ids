@@ -14,10 +14,10 @@ const Dashboard = () => {
   const [realtimeTraffic, setRealtimeTraffic] = useState<TrafficData[]>([]);
   const [threats, setThreats] = useState<NetworkThreat[]>([]);
 
-  const { data: trafficData = [] } = useQuery({
+  const { data: initialTrafficData = [] } = useQuery({
     queryKey: ['trafficData'],
     queryFn: networkService.getTrafficData,
-    refetchInterval: 30000,
+    refetchInterval: false, // Disable refetch since we're using real-time
     meta: {
       onError: () => {
         toast({
@@ -57,19 +57,28 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    setRealtimeTraffic(trafficData);
-    
+    // Initialize with data from the query
+    if (initialTrafficData.length > 0) {
+      setRealtimeTraffic(initialTrafficData);
+    }
+
+    // Subscribe to real-time updates
     const trafficChannel = supabase
-      .channel('traffic_changes')
+      .channel('traffic_updates')
       .on<TrafficData>(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'traffic_data' },
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'traffic_data' 
+        },
         (payload: RealtimePostgresChangesPayload<TrafficData>) => {
+          console.log('Received traffic update:', payload.new);
           if (payload.new && 'time' in payload.new && 'packets' in payload.new) {
             setRealtimeTraffic(current => {
               const newData = [...current];
               if (newData.length >= 24) {
-                newData.shift();
+                newData.shift(); // Remove oldest data point
               }
               newData.push(payload.new as TrafficData);
               return newData;
@@ -77,14 +86,21 @@ const Dashboard = () => {
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Traffic subscription status:', status);
+      });
 
     const threatChannel = supabase
-      .channel('threat_changes')
+      .channel('threat_updates')
       .on<NetworkThreat>(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'network_threats' },
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'network_threats' 
+        },
         (payload: RealtimePostgresChangesPayload<NetworkThreat>) => {
+          console.log('Received threat update:', payload.new);
           if (payload.new && 
               'threat_type' in payload.new && 
               'source_ip' in payload.new && 
@@ -100,13 +116,16 @@ const Dashboard = () => {
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Threat subscription status:', status);
+      });
 
+    // Cleanup subscriptions
     return () => {
-      supabase.removeChannel(trafficChannel);
-      supabase.removeChannel(threatChannel);
+      trafficChannel.unsubscribe();
+      threatChannel.unsubscribe();
     };
-  }, [trafficData, toast]);
+  }, [initialTrafficData, toast]); // Only re-run if initialTrafficData or toast changes
 
   const handleFalsePositive = async (threatId: number) => {
     const { error } = await supabase
