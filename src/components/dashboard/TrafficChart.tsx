@@ -54,11 +54,9 @@ export const TrafficChart = ({ data }: TrafficChartProps) => {
               labelStyle={{
                 color: "#00A3FF",
                 fontWeight: "bold",
-                transition: "color 0.3s ease",
-                ":hover": {
-                  color: "#FFFFFF"
-                }
+                transition: "color 0.3s ease"
               }}
+              // Removed the ":hover" property which was causing the TypeScript error
             />
             <Line
               type="monotone"
