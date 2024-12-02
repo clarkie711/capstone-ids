@@ -46,60 +46,60 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Generate random IP addresses for simulation
     const generateRandomIP = () => {
-      return Array.from({ length: 4 }, () => 
-        Math.floor(Math.random() * 256)
-      ).join('.')
+      return `192.168.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}`;
     }
 
-    // Simulate different types of attacks
-    const attacks = await Promise.all([
+    // Simulate controlled, educational scenarios
+    const scenarios = [
       {
-        threat_type: 'DDoS',
+        threat_type: 'Port Scan (Educational)',
         source_ip: generateRandomIP(),
-        confidence_score: 0.85,
+        confidence_score: 0.65,
         details: {
-          requestFrequency: 1500,
+          ports_scanned: 5,
+          scan_type: 'TCP SYN',
           timestamp: new Date().toISOString()
         },
         location: await getIpLocation()
       },
       {
-        threat_type: 'Data Exfiltration',
+        threat_type: 'Unusual Traffic Pattern',
         source_ip: generateRandomIP(),
-        confidence_score: 0.75,
+        confidence_score: 0.55,
         details: {
-          payloadSize: 15000000, // 15MB
+          bandwidth_usage: '2.5MB/s',
+          duration: '30s',
           timestamp: new Date().toISOString()
         },
         location: await getIpLocation()
       },
       {
-        threat_type: 'Brute Force',
+        threat_type: 'Authentication Attempt',
         source_ip: generateRandomIP(),
-        confidence_score: 0.95,
+        confidence_score: 0.45,
         details: {
-          errorRate: 0.8,
+          attempts: 3,
+          interval: '5min',
           timestamp: new Date().toISOString()
         },
         location: await getIpLocation()
       }
-    ]);
+    ];
 
-    // Insert simulated attacks
-    for (const attack of attacks) {
+    // Insert controlled scenarios
+    for (const scenario of scenarios) {
       const { error } = await supabaseClient
         .from('network_threats')
-        .insert(attack)
+        .insert(scenario)
 
       if (error) throw error
       
-      console.log(`Simulated ${attack.threat_type} attack from ${attack.source_ip} in ${attack.location.city}, ${attack.location.country}`)
+      console.log(`Simulated ${scenario.threat_type} from ${scenario.source_ip}`)
     }
 
     return new Response(
-      JSON.stringify({ message: 'Attack simulation completed', attacks }),
+      JSON.stringify({ message: 'Educational scenarios simulated', scenarios }),
       { 
         headers: { 
           ...corsHeaders,

@@ -12,13 +12,13 @@ export const SimulateAttack = () => {
       if (error) throw error;
 
       toast({
-        title: "Attack Simulation Started",
-        description: "Multiple attack vectors have been simulated. Monitor the dashboard for updates.",
+        title: "Educational Simulation Started",
+        description: "Controlled network monitoring scenarios have been initiated for demonstration purposes.",
       });
     } catch (error) {
       toast({
         title: "Simulation Failed",
-        description: "Failed to start attack simulation",
+        description: "Failed to start educational simulation",
         variant: "destructive",
       });
     }
@@ -27,10 +27,10 @@ export const SimulateAttack = () => {
   return (
     <Button 
       onClick={handleSimulation}
-      variant="destructive"
+      variant="outline"
       className="ml-auto"
     >
-      Simulate Attack
+      Run Educational Simulation
     </Button>
   );
 };

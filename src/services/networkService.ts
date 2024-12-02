@@ -86,5 +86,18 @@ export const networkService = {
 
     if (error) throw error;
     return data || [];
+  },
+
+  async logTrafficAnalysis(analysis: {
+    timestamp: string;
+    pattern: string;
+    severity: 'low' | 'medium' | 'high';
+    details: any;
+  }) {
+    const { error } = await supabase
+      .from('traffic_analysis')
+      .insert([analysis]);
+
+    if (error) throw error;
   }
 };
