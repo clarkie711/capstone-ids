@@ -14,7 +14,17 @@ const commonAttackPatterns = [
       scan_type: ['TCP SYN', 'UDP', 'TCP Connect', 'FIN Scan'][Math.floor(Math.random() * 4)],
       timestamp: new Date().toISOString()
     }),
-    confidence: () => 0.45 + Math.random() * 0.3
+    confidence: () => 0.45 + Math.random() * 0.3,
+    generateLog: (sourceIp: string) => ({
+      event_type: 'security',
+      source_ip: sourceIp,
+      destination_ip: '192.168.1.1',
+      protocol: 'TCP',
+      port: Math.floor(Math.random() * 65535),
+      status: 'warning',
+      message: `Port scan activity detected from ${sourceIp}`,
+      metadata: { scan_type: ['TCP SYN', 'UDP', 'TCP Connect', 'FIN Scan'][Math.floor(Math.random() * 4)] }
+    })
   },
   {
     type: 'Unusual Traffic Pattern',
@@ -24,7 +34,17 @@ const commonAttackPatterns = [
       protocol: ['HTTP', 'HTTPS', 'FTP', 'SSH'][Math.floor(Math.random() * 4)],
       timestamp: new Date().toISOString()
     }),
-    confidence: () => 0.55 + Math.random() * 0.25
+    confidence: () => 0.55 + Math.random() * 0.25,
+    generateLog: (sourceIp: string) => ({
+      event_type: 'traffic',
+      source_ip: sourceIp,
+      destination_ip: '10.0.0.1',
+      protocol: ['HTTP', 'HTTPS', 'FTP', 'SSH'][Math.floor(Math.random() * 4)],
+      port: [80, 443, 21, 22][Math.floor(Math.random() * 4)],
+      status: 'warning',
+      message: `Unusual traffic pattern detected from ${sourceIp}`,
+      metadata: { bandwidth_usage: `${(Math.random() * 10).toFixed(1)}MB/s` }
+    })
   },
   {
     type: 'Authentication Attempt',
@@ -34,7 +54,17 @@ const commonAttackPatterns = [
       service: ['SSH', 'FTP', 'Admin Panel', 'Database'][Math.floor(Math.random() * 4)],
       timestamp: new Date().toISOString()
     }),
-    confidence: () => 0.65 + Math.random() * 0.2
+    confidence: () => 0.65 + Math.random() * 0.2,
+    generateLog: (sourceIp: string) => ({
+      event_type: 'security',
+      source_ip: sourceIp,
+      destination_ip: '192.168.1.100',
+      protocol: ['SSH', 'FTP', 'HTTP', 'POSTGRESQL'][Math.floor(Math.random() * 4)],
+      port: [22, 21, 80, 5432][Math.floor(Math.random() * 4)],
+      status: 'failure',
+      message: `Multiple failed authentication attempts from ${sourceIp}`,
+      metadata: { attempts: Math.floor(Math.random() * 20) + 3 }
+    })
   },
   {
     type: 'DDoS Simulation',
@@ -44,7 +74,17 @@ const commonAttackPatterns = [
       duration: `${Math.floor(Math.random() * 60)}s`,
       timestamp: new Date().toISOString()
     }),
-    confidence: () => 0.75 + Math.random() * 0.2
+    confidence: () => 0.75 + Math.random() * 0.2,
+    generateLog: (sourceIp: string) => ({
+      event_type: 'traffic',
+      source_ip: sourceIp,
+      destination_ip: '192.168.1.1',
+      protocol: ['UDP', 'TCP', 'HTTP', 'DNS'][Math.floor(Math.random() * 4)],
+      port: [53, 80, 443][Math.floor(Math.random() * 3)],
+      status: 'warning',
+      message: `High volume of traffic detected from ${sourceIp}`,
+      metadata: { requests_per_second: Math.floor(Math.random() * 1000) + 100 }
+    })
   }
 ];
 
@@ -80,13 +120,16 @@ serve(async (req) => {
     // Generate 2-4 random threats
     const numberOfThreats = Math.floor(Math.random() * 3) + 2;
     const threats = [];
+    const logs = [];
 
     for (let i = 0; i < numberOfThreats; i++) {
       const attackPattern = commonAttackPatterns[Math.floor(Math.random() * commonAttackPatterns.length)];
+      const sourceIp = generateRandomIP();
       
+      // Create threat
       const threat = {
         threat_type: attackPattern.type,
-        source_ip: generateRandomIP(),
+        source_ip: sourceIp,
         confidence_score: attackPattern.confidence(),
         details: attackPattern.details(),
         location: getRandomLocation(),
@@ -95,23 +138,47 @@ serve(async (req) => {
       };
 
       threats.push(threat);
+
+      // Create corresponding log
+      const log = attackPattern.generateLog(sourceIp);
+      logs.push(log);
+
+      // Add additional connection attempt logs for authentication-related threats
+      if (attackPattern.type === 'Authentication Attempt') {
+        const attempts = Math.floor(Math.random() * 5) + 2;
+        for (let j = 0; j < attempts; j++) {
+          logs.push({
+            ...attackPattern.generateLog(sourceIp),
+            timestamp: new Date(Date.now() - j * 10000).toISOString() // Spread attempts over time
+          });
+        }
+      }
     }
 
-    // Insert all threats
-    const { data, error } = await supabaseClient
+    // Insert threats
+    const { error: threatError } = await supabaseClient
       .from('network_threats')
-      .insert(threats)
-      .select();
+      .insert(threats);
 
-    if (error) {
-      console.error('Error inserting threats:', error);
-      throw error;
+    if (threatError) {
+      console.error('Error inserting threats:', threatError);
+      throw threatError;
     }
 
-    console.log('Successfully simulated threats:', data);
+    // Insert logs
+    const { error: logError } = await supabaseClient
+      .from('network_logs')
+      .insert(logs);
+
+    if (logError) {
+      console.error('Error inserting logs:', logError);
+      throw logError;
+    }
+
+    console.log('Successfully simulated threats and logs:', { threats, logs });
 
     return new Response(
-      JSON.stringify({ message: 'Educational simulation completed', threats: data }),
+      JSON.stringify({ message: 'Educational simulation completed', threats, logs }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
