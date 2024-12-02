@@ -6,118 +6,119 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-async function getIpLocation() {
-  // Generate random coordinates for simulation
+const commonAttackPatterns = [
+  {
+    type: 'Port Scan (Educational)',
+    details: () => ({
+      ports_scanned: Math.floor(Math.random() * 1000) + 100,
+      scan_type: ['TCP SYN', 'UDP', 'TCP Connect', 'FIN Scan'][Math.floor(Math.random() * 4)],
+      timestamp: new Date().toISOString()
+    }),
+    confidence: () => 0.45 + Math.random() * 0.3
+  },
+  {
+    type: 'Unusual Traffic Pattern',
+    details: () => ({
+      bandwidth_usage: `${(Math.random() * 10).toFixed(1)}MB/s`,
+      duration: `${Math.floor(Math.random() * 300)}s`,
+      protocol: ['HTTP', 'HTTPS', 'FTP', 'SSH'][Math.floor(Math.random() * 4)],
+      timestamp: new Date().toISOString()
+    }),
+    confidence: () => 0.55 + Math.random() * 0.25
+  },
+  {
+    type: 'Authentication Attempt',
+    details: () => ({
+      attempts: Math.floor(Math.random() * 20) + 3,
+      interval: `${Math.floor(Math.random() * 10)}min`,
+      service: ['SSH', 'FTP', 'Admin Panel', 'Database'][Math.floor(Math.random() * 4)],
+      timestamp: new Date().toISOString()
+    }),
+    confidence: () => 0.65 + Math.random() * 0.2
+  },
+  {
+    type: 'DDoS Simulation',
+    details: () => ({
+      requests_per_second: Math.floor(Math.random() * 1000) + 100,
+      attack_vector: ['UDP Flood', 'SYN Flood', 'HTTP Flood', 'DNS Amplification'][Math.floor(Math.random() * 4)],
+      duration: `${Math.floor(Math.random() * 60)}s`,
+      timestamp: new Date().toISOString()
+    }),
+    confidence: () => 0.75 + Math.random() * 0.2
+  }
+];
+
+const generateRandomIP = () => {
+  return Array.from({ length: 4 }, () => Math.floor(Math.random() * 256)).join('.');
+};
+
+const getRandomLocation = () => {
   const locations = [
-    {
-      country: 'United States',
-      city: 'Los Angeles',
-      region: 'California',
-      lat: 34.0522,
-      lon: -118.2437
-    },
-    {
-      country: 'United Kingdom',
-      city: 'London',
-      region: 'England',
-      lat: 51.5074,
-      lon: -0.1278
-    },
-    {
-      country: 'Japan',
-      city: 'Tokyo',
-      region: 'Kanto',
-      lat: 35.6762,
-      lon: 139.6503
-    }
+    { country: 'United States', city: 'Los Angeles', region: 'California', lat: 34.0522, lon: -118.2437 },
+    { country: 'China', city: 'Beijing', region: 'Beijing', lat: 39.9042, lon: 116.4074 },
+    { country: 'Russia', city: 'Moscow', region: 'Moscow', lat: 55.7558, lon: 37.6173 },
+    { country: 'Germany', city: 'Berlin', region: 'Berlin', lat: 52.5200, lon: 13.4050 },
+    { country: 'Brazil', city: 'São Paulo', region: 'São Paulo', lat: -23.5505, lon: -46.6333 },
+    { country: 'India', city: 'Mumbai', region: 'Maharashtra', lat: 19.0760, lon: 72.8777 },
+    { country: 'United Kingdom', city: 'London', region: 'England', lat: 51.5074, lon: -0.1278 },
+    { country: 'Japan', city: 'Tokyo', region: 'Kanto', lat: 35.6762, lon: 139.6503 }
   ];
-  
   return locations[Math.floor(Math.random() * locations.length)];
-}
+};
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    );
 
-    const generateRandomIP = () => {
-      return `192.168.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}`;
-    }
+    // Generate 2-4 random threats
+    const numberOfThreats = Math.floor(Math.random() * 3) + 2;
+    const threats = [];
 
-    // Simulate controlled, educational scenarios
-    const scenarios = [
-      {
-        threat_type: 'Port Scan (Educational)',
-        source_ip: generateRandomIP(),
-        confidence_score: 0.65,
-        details: {
-          ports_scanned: 5,
-          scan_type: 'TCP SYN',
-          timestamp: new Date().toISOString()
-        },
-        location: await getIpLocation()
-      },
-      {
-        threat_type: 'Unusual Traffic Pattern',
-        source_ip: generateRandomIP(),
-        confidence_score: 0.55,
-        details: {
-          bandwidth_usage: '2.5MB/s',
-          duration: '30s',
-          timestamp: new Date().toISOString()
-        },
-        location: await getIpLocation()
-      },
-      {
-        threat_type: 'Authentication Attempt',
-        source_ip: generateRandomIP(),
-        confidence_score: 0.45,
-        details: {
-          attempts: 3,
-          interval: '5min',
-          timestamp: new Date().toISOString()
-        },
-        location: await getIpLocation()
-      }
-    ];
-
-    // Insert controlled scenarios
-    for (const scenario of scenarios) {
-      const { error } = await supabaseClient
-        .from('network_threats')
-        .insert(scenario)
-
-      if (error) throw error
+    for (let i = 0; i < numberOfThreats; i++) {
+      const attackPattern = commonAttackPatterns[Math.floor(Math.random() * commonAttackPatterns.length)];
       
-      console.log(`Simulated ${scenario.threat_type} from ${scenario.source_ip}`)
+      const threat = {
+        threat_type: attackPattern.type,
+        source_ip: generateRandomIP(),
+        confidence_score: attackPattern.confidence(),
+        details: attackPattern.details(),
+        location: getRandomLocation(),
+        is_false_positive: false,
+        detected_at: new Date().toISOString()
+      };
+
+      threats.push(threat);
     }
+
+    // Insert all threats
+    const { data, error } = await supabaseClient
+      .from('network_threats')
+      .insert(threats)
+      .select();
+
+    if (error) {
+      console.error('Error inserting threats:', error);
+      throw error;
+    }
+
+    console.log('Successfully simulated threats:', data);
 
     return new Response(
-      JSON.stringify({ message: 'Educational scenarios simulated', scenarios }),
-      { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
-      }
-    )
+      JSON.stringify({ message: 'Educational simulation completed', threats: data }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error in simulate-attack function:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        },
-        status: 400
-      }
-    )
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+    );
   }
-})
+});
