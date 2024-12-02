@@ -1,5 +1,11 @@
-import { MapPin, Globe2 } from "lucide-react";
+import { MapPin, Globe2, Info } from "lucide-react";
 import { NetworkThreat } from "@/services/networkService";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface LocationDetailsProps {
   location: NetworkThreat['location'];
@@ -17,6 +23,29 @@ export const LocationDetails = ({ location }: LocationDetailsProps) => {
         <span className="font-medium text-foreground">
           Location Details
         </span>
+        {location?.metadata && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <Info className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <div className="space-y-1 text-xs">
+                  <p>Source: {location.metadata.source}</p>
+                  {location.metadata.isp && <p>ISP: {location.metadata.isp}</p>}
+                  {location.metadata.org && <p>Organization: {location.metadata.org}</p>}
+                  {location.metadata.timezone && <p>Timezone: {location.metadata.timezone}</p>}
+                  {location.metadata.proxy !== undefined && (
+                    <p>Proxy: {location.metadata.proxy ? 'Yes' : 'No'}</p>
+                  )}
+                  {location.metadata.hosting !== undefined && (
+                    <p>Hosting: {location.metadata.hosting ? 'Yes' : 'No'}</p>
+                  )}
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
         {location ? (

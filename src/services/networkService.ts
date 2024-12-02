@@ -32,6 +32,14 @@ export interface NetworkThreat {
     lat: number;
     lon: number;
     region: string;
+    metadata?: {
+      source: string;
+      isp?: string;
+      org?: string;
+      proxy?: boolean;
+      hosting?: boolean;
+      timezone?: string;
+    };
   };
 }
 
