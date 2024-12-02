@@ -72,6 +72,45 @@ export type Database = {
         }
         Relationships: []
       }
+      network_logs: {
+        Row: {
+          destination_ip: string | null
+          event_type: string
+          id: number
+          message: string
+          metadata: Json | null
+          port: number | null
+          protocol: string | null
+          source_ip: string | null
+          status: string
+          timestamp: string | null
+        }
+        Insert: {
+          destination_ip?: string | null
+          event_type: string
+          id?: number
+          message: string
+          metadata?: Json | null
+          port?: number | null
+          protocol?: string | null
+          source_ip?: string | null
+          status: string
+          timestamp?: string | null
+        }
+        Update: {
+          destination_ip?: string | null
+          event_type?: string
+          id?: number
+          message?: string
+          metadata?: Json | null
+          port?: number | null
+          protocol?: string | null
+          source_ip?: string | null
+          status?: string
+          timestamp?: string | null
+        }
+        Relationships: []
+      }
       network_threats: {
         Row: {
           confidence_score: number

@@ -127,5 +127,16 @@ export const networkService = {
       .insert([analysis]);
 
     if (error) throw error;
-  }
+  },
+
+  async getNetworkLogs(): Promise<NetworkLog[]> {
+    const { data, error } = await supabase
+      .from('network_logs')
+      .select('*')
+      .order('timestamp', { ascending: false })
+      .limit(50);
+
+    if (error) throw error;
+    return data || [];
+  },
 };

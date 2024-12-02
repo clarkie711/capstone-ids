@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
-import { networkService, NetworkThreat, TrafficData } from "@/services/networkService";
+import { networkService, NetworkThreat, TrafficData, NetworkLog } from "@/services/networkService";
 import { StatsOverview } from "@/components/dashboard/StatsOverview";
 import { TrafficChart } from "@/components/dashboard/TrafficChart";
 import { ThreatMonitoring } from "@/components/dashboard/ThreatMonitoring";
+import { NetworkLogs } from "@/components/dashboard/NetworkLogs";
 import { SimulateAttack } from "@/components/dashboard/SimulateAttack";
 import { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
@@ -127,6 +128,21 @@ const Dashboard = () => {
     };
   }, [initialTrafficData, toast]); // Only re-run if initialTrafficData or toast changes
 
+  const { data: networkLogs = [] } = useQuery({
+    queryKey: ['networkLogs'],
+    queryFn: networkService.getNetworkLogs,
+    refetchInterval: 5000,
+    meta: {
+      onError: () => {
+        toast({
+          title: "Error",
+          description: "Failed to fetch network logs",
+          variant: "destructive",
+        });
+      },
+    },
+  });
+
   const handleFalsePositive = async (threatId: number) => {
     const { error } = await supabase
       .from('network_threats')
@@ -170,10 +186,13 @@ const Dashboard = () => {
         
         <TrafficChart data={realtimeTraffic} />
         
-        <ThreatMonitoring
-          threats={threats}
-          onFalsePositive={handleFalsePositive}
-        />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ThreatMonitoring
+            threats={threats}
+            onFalsePositive={handleFalsePositive}
+          />
+          <NetworkLogs logs={networkLogs} />
+        </div>
       </div>
     </div>
   );
