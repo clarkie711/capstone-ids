@@ -16,9 +16,9 @@ export const StatsOverview = ({
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <Card className="p-4 bg-secondary">
         <div className="flex items-center space-x-4">
-          <Activity className="h-8 w-8 text-primary" />
+          <Activity className="h-8 w-8 text-blue-500" />
           <div>
-            <p className="text-sm text-muted-foreground">Active Connections</p>
+            <p className="text-sm text-muted-foreground">Network Connections</p>
             <p className="text-2xl font-bold text-foreground">{activeConnections}</p>
           </div>
         </div>
@@ -26,9 +26,9 @@ export const StatsOverview = ({
       
       <Card className="p-4 bg-secondary">
         <div className="flex items-center space-x-4">
-          <AlertCircle className="h-8 w-8 text-warning" />
+          <AlertCircle className="h-8 w-8 text-blue-500" />
           <div>
-            <p className="text-sm text-muted-foreground">Recent Alerts</p>
+            <p className="text-sm text-muted-foreground">Educational Scenarios</p>
             <p className="text-2xl font-bold text-foreground">{recentAlertsCount}</p>
           </div>
         </div>
@@ -36,9 +36,9 @@ export const StatsOverview = ({
       
       <Card className="p-4 bg-secondary">
         <div className="flex items-center space-x-4">
-          <Shield className="h-8 w-8 text-danger" />
+          <Shield className="h-8 w-8 text-blue-500" />
           <div>
-            <p className="text-sm text-muted-foreground">Blocked IPs</p>
+            <p className="text-sm text-muted-foreground">Filtered IPs</p>
             <p className="text-2xl font-bold text-foreground">{blockedIPs}</p>
           </div>
         </div>

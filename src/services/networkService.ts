@@ -44,7 +44,7 @@ export const networkService = {
       .limit(24);
 
     if (error) throw error;
-    return data;
+    return data || [];
   },
 
   async getRecentAlerts(): Promise<NetworkAlert[]> {
@@ -55,7 +55,7 @@ export const networkService = {
       .limit(10);
 
     if (error) throw error;
-    return data;
+    return data || [];
   },
 
   async getActiveConnections(): Promise<number> {

@@ -105,6 +105,33 @@ export type Database = {
         }
         Relationships: []
       }
+      traffic_analysis: {
+        Row: {
+          created_at: string | null
+          details: Json | null
+          id: number
+          pattern: string
+          severity: string
+          timestamp: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          details?: Json | null
+          id?: number
+          pattern: string
+          severity: string
+          timestamp?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          details?: Json | null
+          id?: number
+          pattern?: string
+          severity?: string
+          timestamp?: string | null
+        }
+        Relationships: []
+      }
       traffic_data: {
         Row: {
           id: number

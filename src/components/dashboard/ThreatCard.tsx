@@ -1,4 +1,4 @@
-import { AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
+import { AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { NetworkThreat } from "@/services/networkService";
 import { LocationDetails } from "./LocationDetails";
 import { useState } from "react";
@@ -11,17 +11,17 @@ interface ThreatCardProps {
 export const ThreatCard = ({ threat, onFalsePositive }: ThreatCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const getAttackDescription = (threat: NetworkThreat) => {
+  const getScenarioDescription = (threat: NetworkThreat) => {
     const details = threat.details || {};
     switch (threat.threat_type) {
-      case 'DDoS':
-        return `Distributed Denial of Service attack detected with ${details.requestFrequency || 'high'} requests per second`;
-      case 'Data Exfiltration':
-        return `Suspicious data transfer detected with ${details.payloadSize ? (details.payloadSize / 1000000).toFixed(2) + 'MB' : 'large'} payload size`;
-      case 'Brute Force':
-        return `Multiple failed authentication attempts with ${details.errorRate ? (details.errorRate * 100).toFixed(1) + '%' : 'high'} error rate`;
+      case 'Port Scan (Educational)':
+        return `Network scanning activity detected: ${details.ports_scanned} ports scanned using ${details.scan_type} method`;
+      case 'Unusual Traffic Pattern':
+        return `Unusual bandwidth usage detected: ${details.bandwidth_usage} over ${details.duration}`;
+      case 'Authentication Attempt':
+        return `Multiple authentication events: ${details.attempts} attempts over ${details.interval} interval`;
       default:
-        return `Suspicious activity detected with unusual traffic patterns`;
+        return `Network activity detected with unusual patterns`;
     }
   };
 
@@ -30,7 +30,7 @@ export const ThreatCard = ({ threat, onFalsePositive }: ThreatCardProps) => {
       <div className="flex items-center justify-between p-4">
         <div className="space-y-2 w-full">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-destructive" />
+            <AlertCircle className="h-4 w-4 text-blue-500" />
             <p className="font-medium text-foreground">{threat.threat_type}</p>
           </div>
           <p className="text-sm text-muted-foreground">
@@ -39,11 +39,7 @@ export const ThreatCard = ({ threat, onFalsePositive }: ThreatCardProps) => {
           <LocationDetails location={threat.location} />
         </div>
         <div className="flex items-center gap-4 ml-4">
-          <span className={`px-2 py-1 rounded text-xs ${
-            threat.confidence_score > 0.7
-              ? "bg-destructive text-destructive-foreground"
-              : "bg-warning text-warning-foreground"
-          }`}>
+          <span className="px-2 py-1 rounded text-xs bg-blue-100 text-blue-800">
             {Math.round(threat.confidence_score * 100)}% confidence
           </span>
           <button
@@ -67,8 +63,8 @@ export const ThreatCard = ({ threat, onFalsePositive }: ThreatCardProps) => {
       {isExpanded && (
         <div className="px-4 pb-4 border-t border-border">
           <div className="mt-3 text-sm">
-            <h4 className="font-medium mb-2">Attack Details</h4>
-            <p className="text-muted-foreground">{getAttackDescription(threat)}</p>
+            <h4 className="font-medium mb-2">Scenario Details</h4>
+            <p className="text-muted-foreground">{getScenarioDescription(threat)}</p>
             <div className="mt-2 text-xs text-muted-foreground">
               Detected at: {new Date(threat.detected_at).toLocaleString()}
             </div>
