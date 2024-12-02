@@ -8,29 +8,20 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { useEffect, useState } from "react";
-import { TrafficData } from "@/services/networkService";
 import { format } from "date-fns";
+import { TrafficData } from "@/services/networkService";
 
 interface TrafficChartProps {
   data: TrafficData[];
 }
 
 export const TrafficChart = ({ data }: TrafficChartProps) => {
-  const [chartData, setChartData] = useState<TrafficData[]>(data);
-
-  // Update chart data with server timestamps
-  useEffect(() => {
-    // Use the data directly since Supabase already provides server timestamps
-    setChartData(data);
-  }, [data]);
-
   return (
     <Card className="p-6 bg-secondary">
       <h2 className="text-lg font-semibold mb-4">Network Traffic (Real-time)</h2>
       <div className="h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData}>
+          <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
               dataKey="time" 
