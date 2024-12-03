@@ -35,11 +35,11 @@ export const DashboardLayout = ({
       
       <TrafficChart data={trafficData} />
       
-      <ResizablePanelGroup direction="horizontal" className="min-h-[500px] rounded-lg border">
+      <ResizablePanelGroup direction="vertical" className="min-h-[800px] rounded-lg border">
         <ResizablePanel defaultSize={50}>
-          <ScrollArea className="h-[500px]">
+          <ScrollArea className="h-[400px]">
             <div className="p-4">
-              <ThreatMonitoring threats={threats} onFalsePositive={onFalsePositive} />
+              <NetworkLogs logs={networkLogs} />
             </div>
           </ScrollArea>
         </ResizablePanel>
@@ -47,9 +47,9 @@ export const DashboardLayout = ({
         <ResizableHandle withHandle />
         
         <ResizablePanel defaultSize={50}>
-          <ScrollArea className="h-[500px]">
+          <ScrollArea className="h-[400px]">
             <div className="p-4">
-              <NetworkLogs logs={networkLogs} />
+              <ThreatMonitoring threats={threats} onFalsePositive={onFalsePositive} />
             </div>
           </ScrollArea>
         </ResizablePanel>
