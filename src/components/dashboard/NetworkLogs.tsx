@@ -8,12 +8,12 @@ interface NetworkLogsProps {
 
 export const NetworkLogs = ({ logs }: NetworkLogsProps) => {
   return (
-    <div className="rounded-lg border bg-card">
-      <div className="p-4 flex items-center justify-between">
+    <div className="rounded-lg border bg-card h-full">
+      <div className="p-4 border-b sticky top-0 bg-card z-10">
         <h2 className="text-lg font-semibold">Network Logs</h2>
       </div>
       <Table>
-        <TableHeader>
+        <TableHeader className="sticky top-[65px] bg-card">
           <TableRow>
             <TableHead>Time</TableHead>
             <TableHead>Event Type</TableHead>

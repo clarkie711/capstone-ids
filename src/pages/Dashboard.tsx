@@ -2,47 +2,25 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
-import { networkService, NetworkThreat, TrafficData, NetworkLog } from "@/services/networkService";
-import { StatsOverview } from "@/components/dashboard/StatsOverview";
-import { TrafficChart } from "@/components/dashboard/TrafficChart";
-import { ThreatMonitoring } from "@/components/dashboard/ThreatMonitoring";
-import { NetworkLogs } from "@/components/dashboard/NetworkLogs";
+import { networkService } from "@/services/networkService";
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { SimulateAttack } from "@/components/dashboard/SimulateAttack";
-import { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
 const Dashboard = () => {
   const { toast } = useToast();
-  const [realtimeTraffic, setRealtimeTraffic] = useState<TrafficData[]>([]);
-  const [threats, setThreats] = useState<NetworkThreat[]>([]);
+  const [realtimeTraffic, setRealtimeTraffic] = useState([]);
+  const [threats, setThreats] = useState([]);
 
   const { data: initialTrafficData = [] } = useQuery({
     queryKey: ['trafficData'],
     queryFn: networkService.getTrafficData,
-    refetchInterval: false, // Disable refetch since we're using real-time
-    meta: {
-      onError: () => {
-        toast({
-          title: "Error",
-          description: "Failed to fetch traffic data",
-          variant: "destructive",
-        });
-      },
-    },
+    refetchInterval: false,
   });
 
   const { data: recentAlerts = [] } = useQuery({
     queryKey: ['recentAlerts'],
     queryFn: networkService.getRecentAlerts,
     refetchInterval: 15000,
-    meta: {
-      onError: () => {
-        toast({
-          title: "Error",
-          description: "Failed to fetch alerts",
-          variant: "destructive",
-        });
-      },
-    },
   });
 
   const { data: activeConnections = 0 } = useQuery({
@@ -57,56 +35,43 @@ const Dashboard = () => {
     refetchInterval: 10000,
   });
 
+  const { data: networkLogs = [] } = useQuery({
+    queryKey: ['networkLogs'],
+    queryFn: networkService.getNetworkLogs,
+    refetchInterval: 5000,
+  });
+
   useEffect(() => {
-    // Initialize with data from the query
     if (initialTrafficData.length > 0) {
       setRealtimeTraffic(initialTrafficData);
     }
 
-    // Subscribe to real-time updates
     const trafficChannel = supabase
       .channel('traffic_updates')
-      .on<TrafficData>(
-        'postgres_changes',
-        { 
-          event: 'INSERT', 
-          schema: 'public', 
-          table: 'traffic_data' 
-        },
-        (payload: RealtimePostgresChangesPayload<TrafficData>) => {
-          console.log('Received traffic update:', payload.new);
+      .on('postgres_changes', 
+        { event: 'INSERT', schema: 'public', table: 'traffic_data' },
+        (payload) => {
           if (payload.new && 'time' in payload.new && 'packets' in payload.new) {
             setRealtimeTraffic(current => {
               const newData = [...current];
               if (newData.length >= 24) {
-                newData.shift(); // Remove oldest data point
+                newData.shift();
               }
-              newData.push(payload.new as TrafficData);
+              newData.push(payload.new);
               return newData;
             });
           }
         }
       )
-      .subscribe((status) => {
-        console.log('Traffic subscription status:', status);
-      });
+      .subscribe();
 
     const threatChannel = supabase
       .channel('threat_updates')
-      .on<NetworkThreat>(
-        'postgres_changes',
-        { 
-          event: 'INSERT', 
-          schema: 'public', 
-          table: 'network_threats' 
-        },
-        (payload: RealtimePostgresChangesPayload<NetworkThreat>) => {
-          console.log('Received threat update:', payload.new);
-          if (payload.new && 
-              'threat_type' in payload.new && 
-              'source_ip' in payload.new && 
-              'confidence_score' in payload.new) {
-            const threat = payload.new as NetworkThreat;
+      .on('postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'network_threats' },
+        (payload) => {
+          if (payload.new) {
+            const threat = payload.new;
             setThreats(current => [...current, threat]);
             
             toast({
@@ -117,31 +82,13 @@ const Dashboard = () => {
           }
         }
       )
-      .subscribe((status) => {
-        console.log('Threat subscription status:', status);
-      });
+      .subscribe();
 
-    // Cleanup subscriptions
     return () => {
       trafficChannel.unsubscribe();
       threatChannel.unsubscribe();
     };
-  }, [initialTrafficData, toast]); // Only re-run if initialTrafficData or toast changes
-
-  const { data: networkLogs = [] } = useQuery({
-    queryKey: ['networkLogs'],
-    queryFn: networkService.getNetworkLogs,
-    refetchInterval: 5000,
-    meta: {
-      onError: () => {
-        toast({
-          title: "Error",
-          description: "Failed to fetch network logs",
-          variant: "destructive",
-        });
-      },
-    },
-  });
+  }, [initialTrafficData, toast]);
 
   const handleFalsePositive = async (threatId: number) => {
     const { error } = await supabase
@@ -178,21 +125,15 @@ const Dashboard = () => {
           <SimulateAttack />
         </div>
         
-        <StatsOverview
+        <DashboardLayout
           activeConnections={activeConnections}
           recentAlertsCount={recentAlerts.length}
           blockedIPs={blockedIPs}
+          trafficData={realtimeTraffic}
+          threats={threats}
+          networkLogs={networkLogs}
+          onFalsePositive={handleFalsePositive}
         />
-        
-        <TrafficChart data={realtimeTraffic} />
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ThreatMonitoring
-            threats={threats}
-            onFalsePositive={handleFalsePositive}
-          />
-          <NetworkLogs logs={networkLogs} />
-        </div>
       </div>
     </div>
   );

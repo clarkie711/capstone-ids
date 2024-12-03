@@ -1,4 +1,3 @@
-import { Card } from "@/components/ui/card";
 import { NetworkThreat } from "@/services/networkService";
 import { ThreatCard } from "./ThreatCard";
 
@@ -9,8 +8,8 @@ interface ThreatMonitoringProps {
 
 export const ThreatMonitoring = ({ threats, onFalsePositive }: ThreatMonitoringProps) => {
   return (
-    <Card className="p-6 bg-secondary">
-      <h2 className="text-lg font-semibold mb-4">Active Threats</h2>
+    <div className="h-full">
+      <h2 className="text-lg font-semibold mb-4 sticky top-0">Active Threats</h2>
       <div className="space-y-4">
         {threats
           .filter(threat => !threat.is_false_positive)
@@ -22,6 +21,6 @@ export const ThreatMonitoring = ({ threats, onFalsePositive }: ThreatMonitoringP
             />
           ))}
       </div>
-    </Card>
+    </div>
   );
 };
