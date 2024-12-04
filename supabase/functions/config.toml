@@ -1,0 +1,11 @@
+project_id = "dytxrwaulirfzzfumyvv"
+
+[global]
+headers = {
+  "Access-Control-Allow-Origin" = "*",
+  "Access-Control-Allow-Headers" = "authorization, x-client-info, apikey, content-type"
+}
+
+[[functions]]
+name = "process-wireshark"
+verify_jwt = false
