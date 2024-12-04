@@ -70,7 +70,7 @@ const educationalScenarios = [
       destination_ip: '192.168.1.100',
       protocol: 'HTTP',
       port: 443,
-      status: 'blocked',
+      status: 'error',
       message: `Educational simulation: SQL injection pattern detected from ${sourceIp}`,
       metadata: {
         simulation_type: 'sql_injection',
@@ -93,7 +93,7 @@ const educationalScenarios = [
       source_ip: sourceIp,
       destination_ip: '192.168.1.255',
       protocol: 'ARP',
-      status: 'alert',
+      status: 'warning',
       message: `Educational simulation: ARP spoofing activity detected from ${sourceIp}`,
       metadata: {
         simulation_type: 'arp_spoofing',
@@ -117,7 +117,7 @@ const educationalScenarios = [
       destination_ip: '192.168.1.10',
       protocol: ['TCP', 'UDP', 'HTTP'][Math.floor(Math.random() * 3)],
       port: [80, 443, 8080][Math.floor(Math.random() * 3)],
-      status: 'critical',
+      status: 'error',
       message: `Educational simulation: High-volume traffic pattern from ${sourceIp}`,
       metadata: {
         simulation_type: 'ddos',
@@ -129,16 +129,6 @@ const educationalScenarios = [
 
 const generateRandomIP = () => {
   return Array.from({ length: 4 }, () => Math.floor(Math.random() * 256)).join('.');
-};
-
-const getRandomLocation = () => {
-  const locations = [
-    { country: 'Philippines', city: 'Manila', region: 'NCR', lat: 14.5995, lon: 120.9842 },
-    { country: 'Philippines', city: 'Cebu', region: 'Central Visayas', lat: 10.3157, lon: 123.8854 },
-    { country: 'Philippines', city: 'Davao', region: 'Davao Region', lat: 7.1907, lon: 125.4553 },
-    { country: 'Philippines', city: 'Baguio', region: 'CAR', lat: 16.4023, lon: 120.5960 }
-  ];
-  return locations[Math.floor(Math.random() * locations.length)];
 };
 
 serve(async (req) => {
@@ -170,7 +160,14 @@ serve(async (req) => {
         source_ip: sourceIp,
         confidence_score: scenario.confidence(),
         details: scenario.details(),
-        location: getRandomLocation(),
+        location: {
+          country: 'Philippines',
+          city: ['Manila', 'Cebu', 'Davao', 'Baguio'][Math.floor(Math.random() * 4)],
+          coordinates: {
+            lat: 14.5995 + (Math.random() - 0.5) * 2,
+            lon: 120.9842 + (Math.random() - 0.5) * 2
+          }
+        },
         is_false_positive: false,
         detected_at: new Date().toISOString()
       };
@@ -191,8 +188,7 @@ serve(async (req) => {
           simulation_id: `sim_${Date.now()}`,
           scenario_type: scenario.type,
           educational_purpose: 'Capstone demonstration'
-        },
-        timestamp: new Date().toISOString()
+        }
       };
       logs.push(contextLog);
     }
