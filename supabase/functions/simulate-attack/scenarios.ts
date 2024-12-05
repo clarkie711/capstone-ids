@@ -80,7 +80,7 @@ export const educationalScenarios: SimulationScenario[] = [
       destination_ip: '192.168.1.100',
       protocol: 'HTTP',
       port: 443,
-      status: 'error',
+      status: 'warning',
       message: `Educational simulation: SQL injection pattern detected from ${sourceIp}`,
       metadata: {
         simulation_type: 'sql_injection',
@@ -127,7 +127,7 @@ export const educationalScenarios: SimulationScenario[] = [
       destination_ip: '192.168.1.10',
       protocol: ['TCP', 'UDP', 'HTTP'][Math.floor(Math.random() * 3)],
       port: [80, 443, 8080][Math.floor(Math.random() * 3)],
-      status: 'error',
+      status: 'warning',
       message: `Educational simulation: High-volume traffic pattern from ${sourceIp}`,
       metadata: {
         simulation_type: 'ddos',

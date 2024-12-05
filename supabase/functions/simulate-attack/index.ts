@@ -43,11 +43,11 @@ serve(async (req) => {
       const log = scenario.generateLog(sourceIp);
       logs.push(log);
 
-      // Add additional context logs
+      // Add additional context logs with valid status
       const contextLog = {
         event_type: 'system',
         source_ip: sourceIp,
-        status: 'success',
+        status: 'success', // Using a valid status value
         message: `Educational simulation context: ${scenario.type}`,
         metadata: {
           simulation_id: `sim_${Date.now()}`,
@@ -57,6 +57,9 @@ serve(async (req) => {
       };
       logs.push(contextLog);
     }
+
+    console.log('Inserting threats:', threats);
+    console.log('Inserting logs:', logs);
 
     // Insert threats
     const { error: threatError } = await supabaseClient
