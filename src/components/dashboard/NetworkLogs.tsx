@@ -2,13 +2,21 @@ import { NetworkLog } from "@/services/networkService";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDistanceToNow } from "date-fns";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { HelpCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { HelpCircle, RefreshCw } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface NetworkLogsProps {
   logs: NetworkLog[];
 }
 
 export const NetworkLogs = ({ logs }: NetworkLogsProps) => {
+  const queryClient = useQueryClient();
+
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['networkLogs'] });
+  };
+
   // Sort logs by timestamp in descending order (newest first)
   const sortedLogs = [...logs].sort((a, b) => 
     new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
@@ -16,8 +24,17 @@ export const NetworkLogs = ({ logs }: NetworkLogsProps) => {
 
   return (
     <div className="rounded-lg border bg-card h-full overflow-hidden">
-      <div className="p-4 border-b sticky top-0 bg-card z-10">
+      <div className="p-4 border-b sticky top-0 bg-card z-10 flex justify-between items-center">
         <h2 className="text-lg font-semibold">Network Logs</h2>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRefresh}
+          className="gap-2"
+        >
+          <RefreshCw className="h-4 w-4" />
+          Refresh
+        </Button>
       </div>
       <div className="overflow-auto max-h-[calc(100vh-12rem)]">
         <Table>
