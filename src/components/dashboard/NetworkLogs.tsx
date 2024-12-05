@@ -24,14 +24,46 @@ export const NetworkLogs = ({ logs }: NetworkLogsProps) => {
           <TableHeader className="sticky top-0 bg-card z-10">
             <TableRow>
               <TableHead>Time</TableHead>
-              <TableHead>Event Type</TableHead>
-              <TableHead>Source IP</TableHead>
+              <TableHead className="flex items-center gap-2">
+                Event Type
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-[300px] p-4">
+                      <p className="text-sm text-muted-foreground">
+                        Types of network events that are logged:
+                        <br />- <span className="font-medium">connection:</span> New network connections
+                        <br />- <span className="font-medium">traffic:</span> Network traffic patterns
+                        <br />- <span className="font-medium">security:</span> Security-related events
+                        <br />- <span className="font-medium">system:</span> System-level events
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </TableHead>
+              <TableHead className="flex items-center gap-2">
+                Source IP
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-sm text-muted-foreground">
+                        The IP address where the network activity originated from
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </TableHead>
               <TableHead className="flex items-center gap-2">
                 Destination IP
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger>
-                      <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                      <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Some events may not have a destination IP depending on the type of network activity</p>
@@ -39,13 +71,30 @@ export const NetworkLogs = ({ logs }: NetworkLogsProps) => {
                   </Tooltip>
                 </TooltipProvider>
               </TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead className="flex items-center gap-2">
+                Status
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-[300px] p-4">
+                      <p className="text-sm text-muted-foreground">
+                        Event status indicators:
+                        <br />- <span className="font-medium">success:</span> Event completed normally
+                        <br />- <span className="font-medium">warning:</span> Potential issues detected
+                        <br />- <span className="font-medium">error:</span> Event failed or was blocked
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </TableHead>
               <TableHead className="min-w-[200px]">Message</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {sortedLogs.map((log) => (
-              <TableRow key={log.id}>
+              <TableRow key={log.id} className="cursor-pointer hover:bg-muted/50">
                 <TableCell className="whitespace-nowrap">
                   {formatDistanceToNow(new Date(log.timestamp), { addSuffix: true })}
                 </TableCell>
