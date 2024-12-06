@@ -1,5 +1,5 @@
 import { AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
-import { NetworkThreat } from "@/services/networkService";
+import { NetworkThreat } from "@/types/network";
 import { LocationDetails } from "./LocationDetails";
 import { useState } from "react";
 

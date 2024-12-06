@@ -1,5 +1,5 @@
 import { MapPin, Globe2, Info } from "lucide-react";
-import { NetworkThreat } from "@/services/networkService";
+import { Location } from "@/types/network";
 import {
   Tooltip,
   TooltipContent,
@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/tooltip";
 
 interface LocationDetailsProps {
-  location: NetworkThreat['location'];
+  location: Location;
 }
 
 export const LocationDetails = ({ location }: LocationDetailsProps) => {

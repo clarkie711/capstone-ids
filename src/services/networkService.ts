@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { Json } from '@/integrations/supabase/types';
+import { NetworkThreat, Location, ThreatDetails } from '@/types/network';
 
 export interface NetworkAlert {
   id: number;
@@ -37,17 +37,6 @@ export interface NetworkLog {
 export interface TrafficData {
   time: string;
   packets: number;
-}
-
-export interface NetworkThreat {
-  id: number;
-  threat_type: string;
-  source_ip: string;
-  confidence_score: number;
-  is_false_positive: boolean;
-  details: Json;
-  detected_at: string;
-  location: Json;
 }
 
 export const networkService = {
@@ -100,7 +89,12 @@ export const networkService = {
       .order('detected_at', { ascending: false });
 
     if (error) throw error;
-    return (data || []) as NetworkThreat[];
+    const threats = (data || []).map(threat => ({
+      ...threat,
+      location: threat.location as Location,
+      details: threat.details as ThreatDetails
+    }));
+    return threats;
   },
 
   async logTrafficAnalysis(analysis: {
