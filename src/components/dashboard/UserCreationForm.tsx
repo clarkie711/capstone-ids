@@ -53,7 +53,20 @@ export const UserCreationForm = ({ onUserCreated }: UserCreationFormProps) => {
         role: data.role
       });
 
-      if (error) throw error;
+      if (error) {
+        // Check if the error is a duplicate email error
+        if (error.message.includes('duplicate key value') && error.message.includes('email')) {
+          toast({
+            title: "Error",
+            description: "This email address is already registered. Please use a different email.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        // Handle other errors
+        throw error;
+      }
 
       toast({
         title: "Success",
