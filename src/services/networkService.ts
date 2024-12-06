@@ -1,11 +1,12 @@
 import { supabase } from '@/integrations/supabase/client';
+import { Json } from '@/integrations/supabase/types';
 
 export interface NetworkAlert {
   id: number;
   type: string;
   source: string;
   timestamp: string;
-  severity: 'low' | 'medium' | 'high';
+  severity: string;
   location?: {
     latitude: number;
     longitude: number;
@@ -16,7 +17,7 @@ export interface NetworkAlert {
 export interface NetworkLog {
   id: number;
   timestamp: string;
-  event_type: 'connection' | 'traffic' | 'security' | 'system';
+  event_type: string;
   source_ip?: string;
   destination_ip?: string;
   protocol?: string;
@@ -44,23 +45,9 @@ export interface NetworkThreat {
   source_ip: string;
   confidence_score: number;
   is_false_positive: boolean;
-  details: any;
+  details: Json;
   detected_at: string;
-  location?: {
-    country: string;
-    city: string;
-    lat: number;
-    lon: number;
-    region: string;
-    metadata?: {
-      source: string;
-      isp?: string;
-      org?: string;
-      proxy?: boolean;
-      hosting?: boolean;
-      timezone?: string;
-    };
-  };
+  location: Json;
 }
 
 export const networkService = {
@@ -83,7 +70,7 @@ export const networkService = {
       .limit(10);
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as NetworkAlert[];
   },
 
   async getActiveConnections(): Promise<number> {
@@ -113,7 +100,7 @@ export const networkService = {
       .order('detected_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as NetworkThreat[];
   },
 
   async logTrafficAnalysis(analysis: {
@@ -137,6 +124,6 @@ export const networkService = {
       .limit(50);
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as NetworkLog[];
   },
 };
