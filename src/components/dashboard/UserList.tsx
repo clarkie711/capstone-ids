@@ -14,7 +14,10 @@ export const UserList = () => {
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching users:", error);
+        throw error;
+      }
       return data;
     },
     refetchInterval: 5000, // Auto refresh every 5 seconds
