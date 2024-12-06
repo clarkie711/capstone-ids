@@ -1,4 +1,4 @@
-import { NetworkThreat } from "@/services/networkService";
+import { NetworkThreat } from "@/types/network";
 import { ThreatCard } from "./ThreatCard";
 import { HelpCircle } from "lucide-react";
 import {

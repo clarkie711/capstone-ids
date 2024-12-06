@@ -4,7 +4,7 @@ import { ThreatMonitoring } from "./ThreatMonitoring";
 import { NetworkLogs } from "./NetworkLogs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
-import { NetworkThreat, NetworkLog } from "@/services/networkService";
+import { NetworkThreat, NetworkLog } from "@/types/network";
 
 interface DashboardLayoutProps {
   activeConnections: number;

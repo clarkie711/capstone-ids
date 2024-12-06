@@ -91,8 +91,8 @@ export const networkService = {
     if (error) throw error;
     const threats = (data || []).map(threat => ({
       ...threat,
-      location: threat.location as Location,
-      details: threat.details as ThreatDetails
+      location: threat.location as unknown as Location,
+      details: threat.details as unknown as ThreatDetails
     }));
     return threats;
   },
