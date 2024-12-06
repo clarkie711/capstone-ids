@@ -17,6 +17,7 @@ export const UserList = () => {
       if (error) throw error;
       return data;
     },
+    refetchInterval: 5000, // Auto refresh every 5 seconds
   });
 
   const handleRefresh = () => {

@@ -6,6 +6,7 @@ import { networkService } from "@/services/networkService";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { SimulateAttack } from "@/components/dashboard/SimulateAttack";
 import { UserManagement } from "@/components/dashboard/UserManagement";
+import { UserDropdown } from "@/components/dashboard/UserDropdown";
 
 const Dashboard = () => {
   const { toast } = useToast();
@@ -123,7 +124,10 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-foreground">Network Security Dashboard</h1>
-          <SimulateAttack />
+          <div className="flex items-center gap-4">
+            <SimulateAttack />
+            <UserDropdown />
+          </div>
         </div>
         
         <DashboardLayout
