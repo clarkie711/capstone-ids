@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { networkService } from "@/services/networkService";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { SimulateAttack } from "@/components/dashboard/SimulateAttack";
+import { UserManagement } from "@/components/dashboard/UserManagement";
 
 const Dashboard = () => {
   const { toast } = useToast();
@@ -134,6 +135,10 @@ const Dashboard = () => {
           networkLogs={networkLogs}
           onFalsePositive={handleFalsePositive}
         />
+
+        <div className="mt-8">
+          <UserManagement />
+        </div>
       </div>
     </div>
   );
