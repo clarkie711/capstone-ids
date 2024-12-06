@@ -36,14 +36,20 @@ export const UserDropdown = () => {
           <User className="h-5 w-5" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+      <DropdownMenuContent align="end" className="w-56 bg-white dark:bg-gray-800">
+        <DropdownMenuLabel className="font-semibold">My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+        <DropdownMenuItem 
+          onClick={() => navigate("/user-management")}
+          className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+        >
           <Users className="mr-2 h-4 w-4" />
           User Management
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleLogout}>
+        <DropdownMenuItem 
+          onClick={handleLogout}
+          className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+        >
           <LogOut className="mr-2 h-4 w-4" />
           Logout
         </DropdownMenuItem>

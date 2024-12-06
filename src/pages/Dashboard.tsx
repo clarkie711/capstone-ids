@@ -5,7 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { networkService } from "@/services/networkService";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { SimulateAttack } from "@/components/dashboard/SimulateAttack";
-import { UserManagement } from "@/components/dashboard/UserManagement";
 import { UserDropdown } from "@/components/dashboard/UserDropdown";
 
 const Dashboard = () => {
@@ -139,10 +138,6 @@ const Dashboard = () => {
           networkLogs={networkLogs}
           onFalsePositive={handleFalsePositive}
         />
-
-        <div className="mt-8">
-          <UserManagement />
-        </div>
       </div>
     </div>
   );
