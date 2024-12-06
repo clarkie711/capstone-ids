@@ -36,19 +36,22 @@ export const UserDropdown = () => {
           <User className="h-5 w-5" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56 bg-white dark:bg-gray-800">
+      <DropdownMenuContent 
+        align="end" 
+        className="w-56 bg-secondary dark:bg-gray-800 text-secondary-foreground dark:text-white"
+      >
         <DropdownMenuLabel className="font-semibold">My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem 
           onClick={() => navigate("/user-management")}
-          className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+          className="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-600"
         >
           <Users className="mr-2 h-4 w-4" />
           User Management
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={handleLogout}
-          className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+          className="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-600"
         >
           <LogOut className="mr-2 h-4 w-4" />
           Logout
