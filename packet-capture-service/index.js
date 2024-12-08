@@ -6,8 +6,6 @@ import { dirname, join } from 'path';
 
 dotenv.config();
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
 // Initialize Supabase client
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -15,15 +13,15 @@ const supabase = createClient(
 );
 
 // Configure tshark options
-const interface = process.env.INTERFACE || 'eth0';
+const networkInterface = process.env.INTERFACE || 'eth0';
 const tsharkPath = '/usr/bin/tshark';
 const tsharkArgs = [
-  '-i', interface,
+  '-i', networkInterface,
   '-T', 'ek',  // Elastic Search format (JSON)
   '-l'         // Line-buffered mode
 ];
 
-console.log(`Starting packet capture on interface ${interface}...`);
+console.log(`Starting packet capture on interface ${networkInterface}...`);
 
 // Start tshark process
 const tshark = spawn(tsharkPath, tsharkArgs);
