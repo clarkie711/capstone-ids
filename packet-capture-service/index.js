@@ -29,10 +29,19 @@ const tshark = spawn(tsharkPath, tsharkArgs);
 // Handle tshark output
 tshark.stdout.on('data', async (data) => {
   try {
-    // Parse the JSON data
+    // Parse the JSON data with error handling for each line
     const packets = data.toString().split('\n')
       .filter(line => line.trim())
-      .map(line => JSON.parse(line));
+      .reduce((validPackets, line) => {
+        try {
+          const packet = JSON.parse(line);
+          validPackets.push(packet);
+        } catch (parseError) {
+          console.log('Skipping invalid JSON line:', line.substring(0, 100) + '...');
+          console.debug('Parse error:', parseError.message);
+        }
+        return validPackets;
+      }, []);
 
     for (const packet of packets) {
       const layers = packet.layers;
