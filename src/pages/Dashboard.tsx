@@ -16,7 +16,7 @@ type TrafficData = Database['public']['Tables']['traffic_data']['Row'];
 
 const Dashboard = () => {
   const { toast } = useToast();
-  const [realtimeTraffic, setRealtimeTraffic] = useState([]);
+  const [realtimeTraffic, setRealtimeTraffic] = useState<TrafficData[]>([]);
   const [threats, setThreats] = useState([]);
   const [activeConnectionsCount, setActiveConnectionsCount] = useState(0);
 
@@ -61,17 +61,20 @@ const Dashboard = () => {
         },
         (payload: RealtimePostgresChangesPayload<TrafficData>) => {
           console.log('Received traffic update:', payload);
-          setRealtimeTraffic(current => {
-            const newData = [...current];
-            if (newData.length >= 24) {
-              newData.shift();
-            }
-            newData.push({
-              time: payload.new.time,
-              packets: payload.new.packets
+          if (payload.new) {
+            setRealtimeTraffic(current => {
+              const newData = [...current];
+              if (newData.length >= 24) {
+                newData.shift();
+              }
+              newData.push({
+                id: payload.new.id,
+                time: payload.new.time,
+                packets: payload.new.packets
+              });
+              return newData;
             });
-            return newData;
-          });
+          }
         }
       )
       .subscribe();
