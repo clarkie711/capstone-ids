@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface NetworkTrafficLog {
   id: number;
@@ -101,34 +102,36 @@ export const NetworkTrafficLogs = () => {
           Refresh
         </Button>
       </div>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[50px]">No.</TableHead>
-              <TableHead>Time</TableHead>
-              <TableHead>Source</TableHead>
-              <TableHead>Destination</TableHead>
-              <TableHead>Protocol</TableHead>
-              <TableHead>Length</TableHead>
-              <TableHead>Info</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {logs.map((log, index) => (
-              <TableRow key={log.id}>
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>{formatDistanceToNow(new Date(log.timestamp), { addSuffix: true })}</TableCell>
-                <TableCell>{log.source_address}</TableCell>
-                <TableCell>{log.destination_address}</TableCell>
-                <TableCell>{log.protocol}</TableCell>
-                <TableCell>{log.length} bytes</TableCell>
-                <TableCell>{log.info || '-'}</TableCell>
+      <ScrollArea className="h-[400px] rounded-md border">
+        <div className="rounded-md">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[50px]">No.</TableHead>
+                <TableHead>Time</TableHead>
+                <TableHead>Source</TableHead>
+                <TableHead>Destination</TableHead>
+                <TableHead>Protocol</TableHead>
+                <TableHead>Length</TableHead>
+                <TableHead>Info</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+            </TableHeader>
+            <TableBody>
+              {logs.map((log, index) => (
+                <TableRow key={log.id}>
+                  <TableCell>{index + 1}</TableCell>
+                  <TableCell>{formatDistanceToNow(new Date(log.timestamp), { addSuffix: true })}</TableCell>
+                  <TableCell>{log.source_address}</TableCell>
+                  <TableCell>{log.destination_address}</TableCell>
+                  <TableCell>{log.protocol}</TableCell>
+                  <TableCell>{log.length} bytes</TableCell>
+                  <TableCell>{log.info || '-'}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </ScrollArea>
     </Card>
   );
 };
