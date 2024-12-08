@@ -49,9 +49,9 @@ export const DashboardLayout = ({
         
         <ResizableHandle withHandle className="bg-gray-700 hover:bg-primary/50 transition-colors" />
         
-        <ResizablePanel defaultSize={50}>
-          <ScrollArea className="h-[400px] relative z-20">
-            <div className="p-4">
+        <ResizablePanel defaultSize={50} className="overflow-visible">
+          <ScrollArea className="h-[400px] relative z-20 overflow-visible">
+            <div className="p-4 overflow-visible">
               <ThreatMonitoring threats={threats} onFalsePositive={onFalsePositive} />
             </div>
           </ScrollArea>
