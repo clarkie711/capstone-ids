@@ -20,7 +20,29 @@ export const LocationDetails = ({ location }: LocationDetailsProps) => {
     return `https://www.google.com/maps?q=${lat},${lon}`;
   };
 
-  if (!location || !location.lat || !location.lon) {
+  // Debug location data
+  console.log('Location data received:', location);
+
+  // Check if location is completely missing
+  if (!location) {
+    console.log('No location data available');
+    return (
+      <div className="bg-secondary/50 p-3 rounded-lg">
+        <div className="text-sm text-muted-foreground italic">
+          Location information unavailable
+        </div>
+      </div>
+    );
+  }
+
+  // Check if we have the minimum required data for display
+  const hasBasicInfo = location.country || location.city || location.region;
+  const hasCoordinates = typeof location.lat === 'number' && typeof location.lon === 'number';
+
+  console.log('Has basic info:', hasBasicInfo);
+  console.log('Has coordinates:', hasCoordinates);
+
+  if (!hasBasicInfo && !hasCoordinates) {
     return (
       <div className="bg-secondary/50 p-3 rounded-lg">
         <div className="text-sm text-muted-foreground italic">
@@ -62,30 +84,36 @@ export const LocationDetails = ({ location }: LocationDetailsProps) => {
         )}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <MapPin className="h-4 w-4" />
-          <span>
-            {location.city || 'Unknown City'}, {location.region || 'Unknown Region'}
-          </span>
-        </div>
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Globe2 className="h-4 w-4" />
-          <span>{location.country || 'Unknown Country'}</span>
-        </div>
-        <div className="flex items-center gap-2 text-muted-foreground col-span-2">
-          <MapPin className="h-4 w-4" />
-          <span>
-            Coordinates: {formatCoordinates(location.lat, location.lon)}
-          </span>
-          <a
-            href={getGoogleMapsUrl(location.lat, location.lon)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary hover:underline ml-2"
-          >
-            View on Map
-          </a>
-        </div>
+        {hasBasicInfo && (
+          <>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <MapPin className="h-4 w-4" />
+              <span>
+                {location.city || 'Unknown City'}, {location.region || 'Unknown Region'}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Globe2 className="h-4 w-4" />
+              <span>{location.country || 'Unknown Country'}</span>
+            </div>
+          </>
+        )}
+        {hasCoordinates && (
+          <div className="flex items-center gap-2 text-muted-foreground col-span-2">
+            <MapPin className="h-4 w-4" />
+            <span>
+              Coordinates: {formatCoordinates(location.lat, location.lon)}
+            </span>
+            <a
+              href={getGoogleMapsUrl(location.lat, location.lon)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline ml-2"
+            >
+              View on Map
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );
