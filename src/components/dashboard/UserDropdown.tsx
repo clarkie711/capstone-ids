@@ -10,11 +10,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { User, Users, LogOut } from "lucide-react";
+import { User, Users, LogOut, UserCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export const UserDropdown = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserEmail(user.email);
+      }
+    };
+    getUser();
+  }, []);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -42,6 +54,17 @@ export const UserDropdown = () => {
       >
         <DropdownMenuLabel className="font-semibold">My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem 
+          className="cursor-default hover:bg-gray-200 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-600"
+        >
+          <UserCircle className="mr-2 h-4 w-4" />
+          <div className="flex flex-col">
+            <span className="text-sm font-medium">Account</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[180px]">
+              {userEmail || 'Loading...'}
+            </span>
+          </div>
+        </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => navigate("/user-management")}
           className="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-600"
