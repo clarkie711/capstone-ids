@@ -65,6 +65,8 @@ export const networkService = {
   async getTrafficData(): Promise<TrafficData[]> {
     try {
       console.log('Fetching traffic data...');
+      console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+      
       const { data, error } = await supabase
         .from('traffic_data')
         .select('*')
@@ -73,14 +75,18 @@ export const networkService = {
 
       if (error) {
         console.error('Error fetching traffic data:', error);
-        return [];
+        throw error;
       }
       
       console.log('Received traffic data:', data);
       return data || [];
     } catch (error) {
       console.error('Error in getTrafficData:', error);
-      return [];
+      if (error instanceof Error) {
+        console.error('Error details:', error.message);
+        console.error('Error stack:', error.stack);
+      }
+      throw error;
     }
   },
 
