@@ -12,6 +12,28 @@ export const NetworkTrafficLogs = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  const startCapture = async () => {
+    try {
+      const { error } = await supabase.functions.invoke('process-wireshark', {
+        body: { action: 'capture' }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Wireshark capture started successfully",
+      });
+    } catch (error) {
+      console.error('Error starting capture:', error);
+      toast({
+        title: "Error",
+        description: "Failed to start network capture",
+        variant: "destructive",
+      });
+    }
+  };
+
   const fetchLogs = async () => {
     try {
       setIsLoading(true);
@@ -37,6 +59,7 @@ export const NetworkTrafficLogs = () => {
 
   useEffect(() => {
     fetchLogs();
+    startCapture(); // Start capture when component mounts
 
     const channel = supabase
       .channel("network_traffic_logs")
