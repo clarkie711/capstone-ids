@@ -13,7 +13,7 @@ export const wiresharkService = {
   async processPackets(packets: WiresharkPacket[]) {
     console.log('Processing Wireshark packets:', packets);
     const { data, error } = await supabase.functions.invoke('process-wireshark', {
-      body: packets,
+      body: { packets }
     });
 
     if (error) {
@@ -25,8 +25,16 @@ export const wiresharkService = {
 
   async startCapture() {
     console.log('Starting Wireshark capture...');
+    
+    // First check if capture is already running
+    const status = await this.getCaptureStatus();
+    if (status) {
+      console.log('Capture already running, stopping first...');
+      await this.stopCapture();
+    }
+
     const { data, error } = await supabase.functions.invoke('process-wireshark', {
-      body: { action: 'start', timestamp: new Date().toISOString() }
+      body: { action: 'start' }
     });
 
     if (error) {
@@ -40,7 +48,7 @@ export const wiresharkService = {
   async stopCapture() {
     console.log('Stopping Wireshark capture...');
     const { data, error } = await supabase.functions.invoke('process-wireshark', {
-      body: { action: 'stop', timestamp: new Date().toISOString() }
+      body: { action: 'stop' }
     });
 
     if (error) {

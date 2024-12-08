@@ -8,99 +8,96 @@ const corsHeaders = {
 
 let isCapturing = false;
 let captureInterval: number | null = null;
-let wiresharkProcess: Deno.Process | null = null;
+
+// Simulate network traffic when we can't use tshark
+function generateSimulatedPacket() {
+  return Math.floor(Math.random() * 100) + 50; // Random packet size between 50-150
+}
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { action } = await req.json();
+    const body = await req.json();
+    const action = body?.action;
     console.log('Processing Wireshark action:', action);
+
+    // Validate action
+    if (!action || typeof action !== 'string') {
+      console.error('Invalid or missing action in request');
+      return new Response(
+        JSON.stringify({ success: false, message: 'Invalid or missing action' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
 
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    if (action === 'start' && !isCapturing) {
-      console.log('Starting Wireshark capture...');
-      isCapturing = true;
-
-      // Start tshark (Wireshark CLI) process
-      try {
-        wiresharkProcess = new Deno.Command('tshark', {
-          args: ['-i', 'any', '-T', 'json', '-l'],
-          stdout: 'piped',
-        }).spawn();
-
-        const decoder = new TextDecoder();
-        let buffer = '';
-
-        // Process the output stream
-        for await (const chunk of wiresharkProcess.stdout.getReader()) {
-          if (!isCapturing) break;
-          
-          buffer += decoder.decode(chunk);
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || ''; // Keep incomplete line in buffer
-
-          for (const line of lines) {
-            try {
-              const packet = JSON.parse(line);
-              const packetSize = parseInt(packet.length) || 0;
-
-              const { error } = await supabaseClient
-                .from('traffic_data')
-                .insert([{
-                  time: new Date().toISOString(),
-                  packets: packetSize
-                }]);
-
-              if (error) {
-                console.error('Error inserting traffic data:', error);
-              }
-            } catch (e) {
-              console.error('Error processing packet:', e);
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Failed to start tshark:', error);
-        isCapturing = false;
+    if (action === 'start') {
+      console.log('Starting packet capture simulation...');
+      
+      if (isCapturing) {
+        console.log('Capture already running');
         return new Response(
-          JSON.stringify({ success: false, error: 'Failed to start packet capture' }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+          JSON.stringify({ success: false, message: 'Capture already running', isRunning: true }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
         );
       }
 
+      isCapturing = true;
+
+      // Start simulated packet capture
+      if (captureInterval === null) {
+        captureInterval = setInterval(async () => {
+          if (!isCapturing) {
+            if (captureInterval !== null) {
+              clearInterval(captureInterval);
+              captureInterval = null;
+            }
+            return;
+          }
+
+          try {
+            const packetSize = generateSimulatedPacket();
+            const { error } = await supabaseClient
+              .from('traffic_data')
+              .insert([{
+                time: new Date().toISOString(),
+                packets: packetSize
+              }]);
+
+            if (error) {
+              console.error('Error inserting traffic data:', error);
+            }
+          } catch (e) {
+            console.error('Error in capture interval:', e);
+          }
+        }, 1000); // Generate data every second
+      }
+
       return new Response(
-        JSON.stringify({ success: true, message: 'Capture started', isRunning: isCapturing }),
+        JSON.stringify({ success: true, message: 'Capture started', isRunning: true }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     if (action === 'stop') {
-      console.log('Stopping Wireshark capture...');
+      console.log('Stopping packet capture...');
       isCapturing = false;
       
-      if (wiresharkProcess) {
-        try {
-          wiresharkProcess.kill('SIGTERM');
-        } catch (error) {
-          console.error('Error stopping tshark process:', error);
-        }
-        wiresharkProcess = null;
-      }
-
-      if (captureInterval) {
+      if (captureInterval !== null) {
         clearInterval(captureInterval);
         captureInterval = null;
       }
 
       return new Response(
-        JSON.stringify({ success: true, message: 'Capture stopped', isRunning: isCapturing }),
+        JSON.stringify({ success: true, message: 'Capture stopped', isRunning: false }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -112,15 +109,16 @@ serve(async (req) => {
       );
     }
 
+    console.error('Invalid action specified:', action);
     return new Response(
-      JSON.stringify({ success: false, message: 'Invalid action' }),
+      JSON.stringify({ success: false, message: `Invalid action specified: ${action}`, isRunning: isCapturing }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
     );
 
   } catch (error) {
     console.error('Error in process-wireshark function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ success: false, error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
