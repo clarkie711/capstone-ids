@@ -29,7 +29,7 @@ const BlockedIPEntry = ({ ip }: { ip: BlockedIP }) => {
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Clock className="h-3 w-3" />
           <span>
-            {new Date(ip.blocked_at).toLocaleString()}
+            {new Date(ip.blocked_at || '').toLocaleString()}
           </span>
         </div>
       </div>
@@ -53,7 +53,7 @@ export const BlockedIPs = () => {
       }
       
       console.log('Blocked IPs data:', data);
-      return data || [];
+      return data as BlockedIP[] || [];
     },
     refetchInterval: 5000,
   });
@@ -66,9 +66,6 @@ export const BlockedIPs = () => {
       </Card>
     );
   }
-
-  // Convert data to array and ensure type safety
-  const blockedIPs = (blockedIPsData || []) as BlockedIP[];
 
   return (
     <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm">
@@ -83,12 +80,12 @@ export const BlockedIPs = () => {
             <div className="text-center text-muted-foreground p-4">
               Loading...
             </div>
-          ) : blockedIPs.length === 0 ? (
+          ) : !blockedIPsData || blockedIPsData.length === 0 ? (
             <div className="text-center text-muted-foreground p-4">
               No blocked IPs yet
             </div>
           ) : (
-            blockedIPs.map((ip) => (
+            blockedIPsData.map((ip: BlockedIP) => (
               <BlockedIPEntry key={ip.id} ip={ip} />
             ))
           )}
