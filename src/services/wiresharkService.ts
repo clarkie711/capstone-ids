@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from "@/integrations/supabase/client";
 
 interface WiresharkPacket {
   timestamp: string;
@@ -26,7 +26,7 @@ export const wiresharkService = {
   async startCapture() {
     console.log('Starting Wireshark capture...');
     const { data, error } = await supabase.functions.invoke('process-wireshark', {
-      body: { action: 'start' }
+      body: { action: 'start', timestamp: new Date().toISOString() }
     });
 
     if (error) {
@@ -40,7 +40,7 @@ export const wiresharkService = {
   async stopCapture() {
     console.log('Stopping Wireshark capture...');
     const { data, error } = await supabase.functions.invoke('process-wireshark', {
-      body: { action: 'stop' }
+      body: { action: 'stop', timestamp: new Date().toISOString() }
     });
 
     if (error) {
@@ -49,6 +49,20 @@ export const wiresharkService = {
     }
 
     return data;
+  },
+
+  async getCaptureStatus() {
+    console.log('Checking Wireshark capture status...');
+    const { data, error } = await supabase.functions.invoke('process-wireshark', {
+      body: { action: 'status' }
+    });
+
+    if (error) {
+      console.error('Error getting capture status:', error);
+      throw error;
+    }
+
+    return data?.isRunning || false;
   },
 
   subscribeToPackets(callback: (packet: WiresharkPacket) => void) {

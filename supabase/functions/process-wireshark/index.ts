@@ -6,6 +6,10 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Keep track of capture state and interval
+let isCapturing = false;
+let captureInterval: number | null = null;
+
 serve(async (req) => {
   const startTime = Date.now();
   
@@ -40,11 +44,22 @@ serve(async (req) => {
         throw new Error('Database connection failed');
       }
 
-      if (action === 'start') {
+      if (action === 'start' && !isCapturing) {
         console.log('Starting Wireshark capture simulation...');
+        isCapturing = true;
         
-        // Simulate network traffic with random data
+        // Clear any existing interval
+        if (captureInterval) {
+          clearInterval(captureInterval);
+        }
+
+        // Start generating traffic data
         const simulateTraffic = async () => {
+          if (!isCapturing) {
+            console.log('Capture stopped, skipping traffic simulation');
+            return;
+          }
+
           const simulatedPacket = {
             time: new Date().toISOString(),
             packets: Math.floor(Math.random() * 100) + 50
@@ -67,37 +82,53 @@ serve(async (req) => {
         // Generate initial data point
         const data = await simulateTraffic();
 
-        // Set up an interval to continuously generate data (cleaned up when 'stop' is called)
-        const intervalId = setInterval(async () => {
+        // Set up interval for continuous data generation
+        // @ts-ignore: Deno global
+        captureInterval = setInterval(async () => {
           try {
-            await simulateTraffic();
+            if (isCapturing) {
+              await simulateTraffic();
+            }
           } catch (error) {
             console.error('Error in traffic simulation interval:', error);
           }
-        }, 2000); // Generate new data every 2 seconds
-
-        // Store the interval ID in a global context (not ideal but works for demo)
-        // @ts-ignore: Deno global
-        globalThis.wiresharkInterval = intervalId;
+        }, 2000);
 
         console.log('Successfully started capture simulation');
         return new Response(
-          JSON.stringify({ success: true, message: 'Capture started', data }),
+          JSON.stringify({ 
+            success: true, 
+            message: 'Capture started', 
+            data,
+            isRunning: isCapturing 
+          }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
       if (action === 'stop') {
         console.log('Stopping Wireshark capture simulation...');
-        // @ts-ignore: Deno global
-        if (globalThis.wiresharkInterval) {
-          // @ts-ignore: Deno global
-          clearInterval(globalThis.wiresharkInterval);
-          // @ts-ignore: Deno global
-          globalThis.wiresharkInterval = null;
+        isCapturing = false;
+        if (captureInterval) {
+          clearInterval(captureInterval);
+          captureInterval = null;
         }
         return new Response(
-          JSON.stringify({ success: true, message: 'Capture stopped' }),
+          JSON.stringify({ 
+            success: true, 
+            message: 'Capture stopped',
+            isRunning: isCapturing 
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      if (action === 'status') {
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            isRunning: isCapturing 
+          }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
@@ -106,7 +137,8 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           success: false,
-          message: `Invalid action specified: ${action}`
+          message: `Invalid action specified: ${action}`,
+          isRunning: isCapturing
         }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -131,7 +163,8 @@ serve(async (req) => {
       JSON.stringify({ 
         error: isTimeout ? 'Request timed out' : (error.message || 'An error occurred'),
         details: error.toString(),
-        execution_time: executionTime
+        execution_time: executionTime,
+        isRunning: isCapturing
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
