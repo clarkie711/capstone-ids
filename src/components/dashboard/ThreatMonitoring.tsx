@@ -21,30 +21,32 @@ export const ThreatMonitoring = ({ threats, onFalsePositive }: ThreatMonitoringP
           <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">
             Active Threats
           </h2>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button className="inline-flex items-center justify-center">
-                <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors cursor-help" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent 
-              side="right"
-              className="max-w-[300px] space-y-2 p-4 bg-gray-900/95 border border-gray-700/50 backdrop-blur-sm shadow-xl"
-            >
-              <p className="font-medium text-primary">Understanding Threat Detection:</p>
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <p>
-                  <span className="font-medium text-foreground">Confidence Score:</span> Indicates the likelihood (0-100%) that the detected activity is a genuine threat based on our analysis algorithms.
-                </p>
-                <p>
-                  <span className="font-medium text-foreground">False Positive:</span> An alert that was incorrectly identified as a threat. Users can mark alerts as false positives to improve detection accuracy.
-                </p>
-                <p>
-                  <span className="font-medium text-foreground">Block IP:</span> Immediately blocks the source IP address from accessing the network.
-                </p>
-              </div>
-            </TooltipContent>
-          </Tooltip>
+          <div className="relative z-[100]">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="inline-flex items-center justify-center">
+                  <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors cursor-help" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent 
+                side="right"
+                className="max-w-[300px] space-y-2 p-4 bg-gray-900/95 border border-gray-700/50 backdrop-blur-sm shadow-xl"
+              >
+                <p className="font-medium text-primary">Understanding Threat Detection:</p>
+                <div className="space-y-2 text-sm text-muted-foreground">
+                  <p>
+                    <span className="font-medium text-foreground">Confidence Score:</span> Indicates the likelihood (0-100%) that the detected activity is a genuine threat based on our analysis algorithms.
+                  </p>
+                  <p>
+                    <span className="font-medium text-foreground">False Positive:</span> An alert that was incorrectly identified as a threat. Users can mark alerts as false positives to improve detection accuracy.
+                  </p>
+                  <p>
+                    <span className="font-medium text-foreground">Block IP:</span> Immediately blocks the source IP address from accessing the network.
+                  </p>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </div>
       </div>
       <div className="space-y-4 px-4">

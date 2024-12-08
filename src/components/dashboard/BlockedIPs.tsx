@@ -43,27 +43,29 @@ export const BlockedIPs = () => {
           <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-red-400">
             Blocked IPs
           </h2>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button className="inline-flex items-center justify-center">
-                <HelpCircle className="h-4 w-4 text-red-400 hover:text-red-300 transition-colors cursor-help" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent 
-              side="right"
-              className="max-w-[300px] space-y-2 p-4 bg-red-950/95 border border-red-900/50 backdrop-blur-sm shadow-xl"
-            >
-              <p className="font-medium text-red-400">Understanding Blocked IPs:</p>
-              <div className="space-y-2 text-sm text-red-200/70">
-                <p>
-                  <span className="font-medium text-red-200">IP Address:</span> The unique identifier of the blocked network connection.
-                </p>
-                <p>
-                  <span className="font-medium text-red-200">Blocked Time:</span> Shows how long ago the IP was blocked from accessing the network.
-                </p>
-              </div>
-            </TooltipContent>
-          </Tooltip>
+          <div className="relative z-[100]">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="inline-flex items-center justify-center">
+                  <HelpCircle className="h-4 w-4 text-red-400 hover:text-red-300 transition-colors cursor-help" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent 
+                side="right"
+                className="max-w-[300px] space-y-2 p-4 bg-red-950/95 border border-red-900/50 backdrop-blur-sm shadow-xl"
+              >
+                <p className="font-medium text-red-400">Understanding Blocked IPs:</p>
+                <div className="space-y-2 text-sm text-red-200/70">
+                  <p>
+                    <span className="font-medium text-red-200">IP Address:</span> The unique identifier of the blocked network connection.
+                  </p>
+                  <p>
+                    <span className="font-medium text-red-200">Blocked Time:</span> Shows how long ago the IP was blocked from accessing the network.
+                  </p>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </div>
       </div>
       <div className="space-y-3 px-4">
