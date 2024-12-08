@@ -20,6 +20,16 @@ export const LocationDetails = ({ location }: LocationDetailsProps) => {
     return `https://www.google.com/maps?q=${lat},${lon}`;
   };
 
+  if (!location || !location.lat || !location.lon) {
+    return (
+      <div className="bg-secondary/50 p-3 rounded-lg">
+        <div className="text-sm text-muted-foreground italic">
+          Location information unavailable
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-secondary/50 p-3 rounded-lg space-y-2">
       <div className="flex items-center gap-2">
@@ -52,40 +62,30 @@ export const LocationDetails = ({ location }: LocationDetailsProps) => {
         )}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-        {location ? (
-          <>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <MapPin className="h-4 w-4" />
-              <span>
-                {location.city || 'Unknown City'}, {location.region || 'Unknown Region'}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Globe2 className="h-4 w-4" />
-              <span>{location.country || 'Unknown Country'}</span>
-            </div>
-            {location.lat && location.lon && (
-              <div className="flex items-center gap-2 text-muted-foreground col-span-2">
-                <MapPin className="h-4 w-4" />
-                <span>
-                  Coordinates: {formatCoordinates(location.lat, location.lon)}
-                </span>
-                <a
-                  href={getGoogleMapsUrl(location.lat, location.lon)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline ml-2"
-                >
-                  View on Map
-                </a>
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="col-span-2 text-muted-foreground italic">
-            Location information unavailable
-          </div>
-        )}
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <MapPin className="h-4 w-4" />
+          <span>
+            {location.city || 'Unknown City'}, {location.region || 'Unknown Region'}
+          </span>
+        </div>
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Globe2 className="h-4 w-4" />
+          <span>{location.country || 'Unknown Country'}</span>
+        </div>
+        <div className="flex items-center gap-2 text-muted-foreground col-span-2">
+          <MapPin className="h-4 w-4" />
+          <span>
+            Coordinates: {formatCoordinates(location.lat, location.lon)}
+          </span>
+          <a
+            href={getGoogleMapsUrl(location.lat, location.lon)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline ml-2"
+          >
+            View on Map
+          </a>
+        </div>
       </div>
     </div>
   );
