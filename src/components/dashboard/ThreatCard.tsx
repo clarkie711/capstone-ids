@@ -36,7 +36,7 @@ export const ThreatCard = ({ threat, onFalsePositive }: ThreatCardProps) => {
           <p className="text-sm text-muted-foreground">
             Source IP: {threat.source_ip}
           </p>
-          <LocationDetails location={threat.location} />
+          {threat.location && <LocationDetails location={threat.location} />}
         </div>
         <div className="flex items-center gap-4 ml-4">
           <span className="px-2 py-1 rounded text-xs bg-blue-100 text-blue-800">
