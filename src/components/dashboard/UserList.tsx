@@ -25,9 +25,20 @@ export const UserList = () => {
 
       if (error) {
         console.error("Error fetching users:", error);
+        console.error("Error details:", {
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
         throw error;
       }
-      console.log("Fetched users:", data);
+
+      if (!data || data.length === 0) {
+        console.log("No users found in the profiles table");
+      } else {
+        console.log("Fetched users successfully:", data);
+      }
+      
       return data;
     },
   });
@@ -61,16 +72,24 @@ export const UserList = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell>{user.full_name}</TableCell>
-                <TableCell>{user.username}</TableCell>
-                <TableCell className="capitalize">{user.role}</TableCell>
-                <TableCell>
-                  {new Date(user.created_at).toLocaleDateString()}
+            {users && users.length > 0 ? (
+              users.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell>{user.full_name}</TableCell>
+                  <TableCell>{user.username}</TableCell>
+                  <TableCell className="capitalize">{user.role}</TableCell>
+                  <TableCell>
+                    {new Date(user.created_at).toLocaleDateString()}
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center py-4">
+                  No users found
                 </TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </div>
