@@ -6,170 +6,122 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Keep track of capture state and interval
 let isCapturing = false;
 let captureInterval: number | null = null;
+let wiresharkProcess: Deno.Process | null = null;
 
 serve(async (req) => {
-  const startTime = Date.now();
-  
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
   try {
-    if (req.method === 'OPTIONS') {
-      return new Response(null, { headers: corsHeaders });
+    const { action } = await req.json();
+    console.log('Processing Wireshark action:', action);
+
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    if (action === 'start' && !isCapturing) {
+      console.log('Starting Wireshark capture...');
+      isCapturing = true;
+
+      // Start tshark (Wireshark CLI) process
+      try {
+        wiresharkProcess = new Deno.Command('tshark', {
+          args: ['-i', 'any', '-T', 'json', '-l'],
+          stdout: 'piped',
+        }).spawn();
+
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        // Process the output stream
+        for await (const chunk of wiresharkProcess.stdout.getReader()) {
+          if (!isCapturing) break;
+          
+          buffer += decoder.decode(chunk);
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+          for (const line of lines) {
+            try {
+              const packet = JSON.parse(line);
+              const packetSize = parseInt(packet.length) || 0;
+
+              const { error } = await supabaseClient
+                .from('traffic_data')
+                .insert([{
+                  time: new Date().toISOString(),
+                  packets: packetSize
+                }]);
+
+              if (error) {
+                console.error('Error inserting traffic data:', error);
+              }
+            } catch (e) {
+              console.error('Error processing packet:', e);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to start tshark:', error);
+        isCapturing = false;
+        return new Response(
+          JSON.stringify({ success: false, error: 'Failed to start packet capture' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, message: 'Capture started', isRunning: isCapturing }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Operation timed out')), 25000);
-    });
-
-    const operationPromise = async () => {
-      let body;
-      try {
-        body = await req.json();
-        console.log('Received request body:', body);
-      } catch (e) {
-        console.error('Error parsing request body:', e);
-        throw new Error('Invalid request body');
-      }
-
-      const { action } = body;
-      console.log('Processing Wireshark action:', action);
-
-      const supabaseClient = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-      );
-
-      if (!supabaseClient) {
-        throw new Error('Database connection failed');
-      }
-
-      if (action === 'start' && !isCapturing) {
-        console.log('Starting Wireshark capture simulation...');
-        isCapturing = true;
-        
-        // Clear any existing interval
-        if (captureInterval) {
-          clearInterval(captureInterval);
+    if (action === 'stop') {
+      console.log('Stopping Wireshark capture...');
+      isCapturing = false;
+      
+      if (wiresharkProcess) {
+        try {
+          wiresharkProcess.kill('SIGTERM');
+        } catch (error) {
+          console.error('Error stopping tshark process:', error);
         }
-
-        // Start generating traffic data
-        const simulateTraffic = async () => {
-          if (!isCapturing) {
-            console.log('Capture stopped, skipping traffic simulation');
-            return;
-          }
-
-          const simulatedPacket = {
-            time: new Date().toISOString(),
-            packets: Math.floor(Math.random() * 100) + 50
-          };
-
-          const { data, error: insertError } = await supabaseClient
-            .from('traffic_data')
-            .insert([simulatedPacket])
-            .select()
-            .single();
-
-          if (insertError) {
-            console.error('Error inserting simulated packet:', insertError);
-            throw insertError;
-          }
-
-          return data;
-        };
-
-        // Generate initial data point
-        const data = await simulateTraffic();
-
-        // Set up interval for continuous data generation
-        // @ts-ignore: Deno global
-        captureInterval = setInterval(async () => {
-          try {
-            if (isCapturing) {
-              await simulateTraffic();
-            }
-          } catch (error) {
-            console.error('Error in traffic simulation interval:', error);
-          }
-        }, 2000);
-
-        console.log('Successfully started capture simulation');
-        return new Response(
-          JSON.stringify({ 
-            success: true, 
-            message: 'Capture started', 
-            data,
-            isRunning: isCapturing 
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        wiresharkProcess = null;
       }
 
-      if (action === 'stop') {
-        console.log('Stopping Wireshark capture simulation...');
-        isCapturing = false;
-        if (captureInterval) {
-          clearInterval(captureInterval);
-          captureInterval = null;
-        }
-        return new Response(
-          JSON.stringify({ 
-            success: true, 
-            message: 'Capture stopped',
-            isRunning: isCapturing 
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+      if (captureInterval) {
+        clearInterval(captureInterval);
+        captureInterval = null;
       }
 
-      if (action === 'status') {
-        return new Response(
-          JSON.stringify({ 
-            success: true, 
-            isRunning: isCapturing 
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      console.warn('Invalid action received:', action);
       return new Response(
-        JSON.stringify({ 
-          success: false,
-          message: `Invalid action specified: ${action}`,
-          isRunning: isCapturing
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400
-        }
+        JSON.stringify({ success: true, message: 'Capture stopped', isRunning: isCapturing }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
-    };
+    }
 
-    const response = await Promise.race([operationPromise(), timeoutPromise]);
-    const executionTime = Date.now() - startTime;
-    console.log(`Operation completed in ${executionTime}ms`);
-    
-    return response;
+    if (action === 'status') {
+      return new Response(
+        JSON.stringify({ success: true, isRunning: isCapturing }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({ success: false, message: 'Invalid action' }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+    );
 
   } catch (error) {
-    const executionTime = Date.now() - startTime;
-    console.error(`Error in process-wireshark function after ${executionTime}ms:`, error);
-    
-    const isTimeout = error.message === 'Operation timed out' || executionTime >= 25000;
-    
+    console.error('Error in process-wireshark function:', error);
     return new Response(
-      JSON.stringify({ 
-        error: isTimeout ? 'Request timed out' : (error.message || 'An error occurred'),
-        details: error.toString(),
-        execution_time: executionTime,
-        isRunning: isCapturing
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: isTimeout ? 504 : 500
-      }
+      JSON.stringify({ error: error.message }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
 });

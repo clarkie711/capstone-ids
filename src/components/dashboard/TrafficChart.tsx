@@ -13,6 +13,7 @@ import { format } from "date-fns";
 import { RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { TrafficData } from "@/services/networkService";
+import { useToast } from "@/hooks/use-toast";
 
 interface TrafficChartProps {
   data: TrafficData[];
@@ -20,10 +21,24 @@ interface TrafficChartProps {
 
 export const TrafficChart = ({ data }: TrafficChartProps) => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     console.log('Manually refreshing traffic data...');
-    queryClient.invalidateQueries({ queryKey: ['trafficData'] });
+    try {
+      await queryClient.invalidateQueries({ queryKey: ['trafficData'] });
+      toast({
+        title: "Success",
+        description: "Traffic data refreshed",
+      });
+    } catch (error) {
+      console.error('Error refreshing traffic data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to refresh traffic data",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -53,20 +68,20 @@ export const TrafficChart = ({ data }: TrafficChartProps) => {
             />
             <XAxis 
               dataKey="time" 
-              tickFormatter={(time) => {
-                const date = new Date(time);
-                return format(date, 'HH:mm:ss');
-              }}
+              tickFormatter={(time) => format(new Date(time), 'HH:mm:ss')}
               stroke="rgba(255,255,255,0.5)"
             />
             <YAxis 
               stroke="rgba(255,255,255,0.5)"
+              label={{ 
+                value: 'Packets', 
+                angle: -90, 
+                position: 'insideLeft',
+                style: { fill: 'rgba(255,255,255,0.5)' }
+              }}
             />
             <Tooltip 
-              labelFormatter={(label) => {
-                const date = new Date(label);
-                return `Time: ${format(date, 'HH:mm:ss')}`;
-              }}
+              labelFormatter={(label) => `Time: ${format(new Date(label), 'HH:mm:ss')}`}
               contentStyle={{
                 backgroundColor: "rgba(17, 24, 39, 0.9)",
                 border: "1px solid rgba(255,255,255,0.1)",

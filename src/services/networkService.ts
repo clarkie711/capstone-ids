@@ -64,17 +64,19 @@ const parseMetadata = (metadata: Json | null): NetworkLogMetadata | undefined =>
 export const networkService = {
   async getTrafficData(): Promise<TrafficData[]> {
     try {
+      console.log('Fetching traffic data...');
       const { data, error } = await supabase
         .from('traffic_data')
         .select('*')
         .order('time', { ascending: true })
-        .limit(24);
+        .limit(50); // Increased limit for better visualization
 
       if (error) {
         console.error('Error fetching traffic data:', error);
-        return [];
+        throw error;
       }
       
+      console.log('Received traffic data:', data);
       return data || [];
     } catch (error) {
       console.error('Error in getTrafficData:', error);
