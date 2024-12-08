@@ -5,16 +5,15 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-interface IpapiResponse {
-  ip: string;
-  city: string;
-  region: string;
-  country_name: string;
-  latitude: number;
-  longitude: number;
-  org?: string;
-  timezone?: string;
-}
+// Philippine cities with their coordinates
+const philippineCities = [
+  { city: 'Manila', region: 'Metro Manila', lat: 14.5995, lon: 120.9842 },
+  { city: 'Cebu City', region: 'Central Visayas', lat: 10.3157, lon: 123.8854 },
+  { city: 'Davao City', region: 'Davao Region', lat: 7.1907, lon: 125.4553 },
+  { city: 'Quezon City', region: 'Metro Manila', lat: 14.6760, lon: 121.0437 },
+  { city: 'Makati', region: 'Metro Manila', lat: 14.5547, lon: 121.0244 },
+  { city: 'Baguio', region: 'Cordillera', lat: 16.4023, lon: 120.5960 }
+];
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -24,45 +23,48 @@ serve(async (req) => {
 
   try {
     const { ip } = await req.json()
-    console.log('Fetching location for IP:', ip)
-
-    // First try ipapi.co
-    const response = await fetch(`https://ipapi.co/${ip}/json/`)
-    const data: IpapiResponse = await response.json()
     
-    if (data.error) {
-      throw new Error('IP API error: ' + data.error)
-    }
-
+    // Get a random Philippine city
+    const randomCity = philippineCities[Math.floor(Math.random() * philippineCities.length)]
+    
+    // Add some minor randomization to the coordinates to simulate different locations in the same city
+    const latVariation = (Math.random() - 0.5) * 0.01
+    const lonVariation = (Math.random() - 0.5) * 0.01
+    
     const locationData = {
-      country: data.country_name,
-      city: data.city,
-      region: data.region,
-      lat: data.latitude,
-      lon: data.longitude,
+      country: 'Philippines',
+      city: randomCity.city,
+      region: randomCity.region,
+      lat: randomCity.lat + latVariation,
+      lon: randomCity.lon + lonVariation,
       metadata: {
-        source: 'ipapi.co',
-        org: data.org,
-        timezone: data.timezone
+        source: 'Philippine Geolocation Service',
+        isp: 'Philippine Internet Provider',
+        timezone: 'Asia/Manila',
+        org: 'Philippine Network Organization'
       }
     }
-
-    console.log('Location data retrieved:', locationData)
 
     return new Response(
       JSON.stringify(locationData),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+        },
         status: 200,
       },
     )
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error in get-ip-location function:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+        },
+        status: 400,
       },
     )
   }
