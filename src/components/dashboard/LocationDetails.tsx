@@ -6,12 +6,43 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface LocationDetailsProps {
   location: Location;
+  sourceIp?: string;
 }
 
-export const LocationDetails = ({ location }: LocationDetailsProps) => {
+export const LocationDetails = ({ location, sourceIp }: LocationDetailsProps) => {
+  const [locationData, setLocationData] = useState<Location | null>(location);
+
+  useEffect(() => {
+    const fetchLocation = async () => {
+      if (!locationData?.lat && !locationData?.lon && sourceIp) {
+        try {
+          const { data, error } = await supabase.functions.invoke('get-ip-location', {
+            body: { ip: sourceIp }
+          });
+
+          if (error) {
+            console.error('Error fetching location:', error);
+            return;
+          }
+
+          if (data) {
+            console.log('Retrieved location data:', data);
+            setLocationData(data);
+          }
+        } catch (error) {
+          console.error('Failed to fetch location:', error);
+        }
+      }
+    };
+
+    fetchLocation();
+  }, [sourceIp, locationData]);
+
   const formatCoordinates = (lat: number, lon: number) => {
     return `${Math.abs(lat).toFixed(4)}°${lat >= 0 ? 'N' : 'S'}, ${Math.abs(lon).toFixed(4)}°${lon >= 0 ? 'E' : 'W'}`;
   };
@@ -20,12 +51,7 @@ export const LocationDetails = ({ location }: LocationDetailsProps) => {
     return `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
   };
 
-  // Debug location data
-  console.log('Location data received:', location);
-
-  // Check if location is completely missing
-  if (!location) {
-    console.log('No location data available');
+  if (!locationData) {
     return (
       <div className="bg-secondary/50 p-3 rounded-lg">
         <div className="text-sm text-muted-foreground italic">
@@ -35,12 +61,8 @@ export const LocationDetails = ({ location }: LocationDetailsProps) => {
     );
   }
 
-  // Check if we have the minimum required data for display
-  const hasBasicInfo = location.country || location.city || location.region;
-  const hasCoordinates = typeof location.lat === 'number' && typeof location.lon === 'number';
-
-  console.log('Has basic info:', hasBasicInfo);
-  console.log('Has coordinates:', hasCoordinates);
+  const hasBasicInfo = locationData.country || locationData.city || locationData.region;
+  const hasCoordinates = typeof locationData.lat === 'number' && typeof locationData.lon === 'number';
 
   if (!hasBasicInfo && !hasCoordinates) {
     return (
@@ -59,7 +81,7 @@ export const LocationDetails = ({ location }: LocationDetailsProps) => {
         <span className="font-medium text-foreground">
           Location Details
         </span>
-        {location?.metadata && (
+        {locationData?.metadata && (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
@@ -67,16 +89,10 @@ export const LocationDetails = ({ location }: LocationDetailsProps) => {
               </TooltipTrigger>
               <TooltipContent>
                 <div className="space-y-1 text-xs">
-                  <p>Source: {location.metadata.source}</p>
-                  {location.metadata.isp && <p>ISP: {location.metadata.isp}</p>}
-                  {location.metadata.org && <p>Organization: {location.metadata.org}</p>}
-                  {location.metadata.timezone && <p>Timezone: {location.metadata.timezone}</p>}
-                  {location.metadata.proxy !== undefined && (
-                    <p>Proxy: {location.metadata.proxy ? 'Yes' : 'No'}</p>
-                  )}
-                  {location.metadata.hosting !== undefined && (
-                    <p>Hosting: {location.metadata.hosting ? 'Yes' : 'No'}</p>
-                  )}
+                  <p>Source: {locationData.metadata.source}</p>
+                  {locationData.metadata.isp && <p>ISP: {locationData.metadata.isp}</p>}
+                  {locationData.metadata.org && <p>Organization: {locationData.metadata.org}</p>}
+                  {locationData.metadata.timezone && <p>Timezone: {locationData.metadata.timezone}</p>}
                 </div>
               </TooltipContent>
             </Tooltip>
@@ -89,12 +105,12 @@ export const LocationDetails = ({ location }: LocationDetailsProps) => {
             <div className="flex items-center gap-2 text-muted-foreground">
               <MapPin className="h-4 w-4" />
               <span>
-                {location.city || 'Unknown City'}, {location.region || 'Unknown Region'}
+                {locationData.city || 'Unknown City'}, {locationData.region || 'Unknown Region'}
               </span>
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
               <Globe2 className="h-4 w-4" />
-              <span>{location.country || 'Unknown Country'}</span>
+              <span>{locationData.country || 'Unknown Country'}</span>
             </div>
           </>
         )}
@@ -102,10 +118,10 @@ export const LocationDetails = ({ location }: LocationDetailsProps) => {
           <div className="flex items-center gap-2 text-muted-foreground col-span-2">
             <MapPin className="h-4 w-4" />
             <span>
-              Coordinates: {formatCoordinates(location.lat, location.lon)}
+              Coordinates: {formatCoordinates(locationData.lat, locationData.lon)}
             </span>
             <a
-              href={getGoogleMapsUrl(location.lat, location.lon)}
+              href={getGoogleMapsUrl(locationData.lat, locationData.lon)}
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary hover:underline ml-2"
