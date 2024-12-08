@@ -12,19 +12,34 @@ interface BlockedIP {
 }
 
 export const BlockedIPs = () => {
-  const { data: blockedIPs = [] } = useQuery({
+  const { data: blockedIPs, isLoading, error } = useQuery({
     queryKey: ['blockedIPs'],
     queryFn: async () => {
+      console.log('Fetching blocked IPs...');
       const { data, error } = await supabase
         .from('blocked_ips')
         .select('*')
         .order('blocked_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching blocked IPs:', error);
+        throw error;
+      }
+      
+      console.log('Blocked IPs data:', data);
       return data as BlockedIP[];
     },
     refetchInterval: 5000,
   });
+
+  if (error) {
+    console.error('Query error:', error);
+    return (
+      <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm">
+        <div className="p-4 text-red-500">Error loading blocked IPs</div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm">
@@ -35,12 +50,16 @@ export const BlockedIPs = () => {
       
       <ScrollArea className="h-[300px]">
         <div className="p-4 space-y-3">
-          {blockedIPs.length === 0 ? (
+          {isLoading ? (
+            <div className="text-center text-muted-foreground p-4">
+              Loading...
+            </div>
+          ) : !blockedIPs || blockedIPs.length === 0 ? (
             <div className="text-center text-muted-foreground p-4">
               No blocked IPs yet
             </div>
           ) : (
-            blockedIPs.map((ip: BlockedIP) => (
+            blockedIPs.map((ip) => (
               <div
                 key={ip.id}
                 className="group rounded-lg border border-gray-700/50 bg-gray-900/30 p-4 transition-all duration-300 hover:bg-gray-800/50 hover:border-gray-600/50"
