@@ -65,7 +65,10 @@ export const networkService = {
   async getTrafficData(): Promise<TrafficData[]> {
     try {
       console.log('Fetching traffic data...');
-      console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+      console.log('Supabase client config:', {
+        url: supabase.config.url,
+        headers: supabase.config.headers,
+      });
       
       const { data, error } = await supabase
         .from('traffic_data')
@@ -92,6 +95,7 @@ export const networkService = {
 
   async getRecentAlerts(): Promise<NetworkAlert[]> {
     try {
+      console.log('Fetching recent alerts...');
       const { data, error } = await supabase
         .from('alerts')
         .select('*')
@@ -103,6 +107,7 @@ export const networkService = {
         return [];
       }
       
+      console.log('Received alerts:', data);
       return data || [];
     } catch (error) {
       console.error('Error in getRecentAlerts:', error);
@@ -133,6 +138,7 @@ export const networkService = {
 
   async getBlockedIPs(): Promise<number> {
     try {
+      console.log('Fetching blocked IPs count...');
       const { count, error } = await supabase
         .from('blocked_ips')
         .select('*', { count: 'exact' });
@@ -142,6 +148,7 @@ export const networkService = {
         return 0;
       }
       
+      console.log('Received blocked IPs count:', count);
       return count || 0;
     } catch (error) {
       console.error('Error in getBlockedIPs:', error);
@@ -152,6 +159,11 @@ export const networkService = {
   async getNetworkLogs(): Promise<NetworkLog[]> {
     try {
       console.log('Fetching network logs...');
+      console.log('Supabase client state:', {
+        url: supabase.config.url,
+        authConfig: supabase.auth.config,
+      });
+
       const { data, error } = await supabase
         .from('network_logs')
         .select('*')
@@ -160,6 +172,11 @@ export const networkService = {
 
       if (error) {
         console.error('Error fetching network logs:', error);
+        console.error('Error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
         return [];
       }
       
@@ -171,6 +188,10 @@ export const networkService = {
       }));
     } catch (error) {
       console.error('Error in getNetworkLogs:', error);
+      if (error instanceof Error) {
+        console.error('Error details:', error.message);
+        console.error('Error stack:', error.stack);
+      }
       return [];
     }
   }
