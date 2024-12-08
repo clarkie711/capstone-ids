@@ -30,7 +30,7 @@ const Dashboard = () => {
   const { data: initialTrafficData = [] } = useQuery({
     queryKey: ['trafficData'],
     queryFn: networkService.getTrafficData,
-    refetchInterval: false,
+    refetchInterval: 5000, // Poll every 5 seconds as backup
   });
 
   const { data: recentAlerts = [] } = useQuery({
@@ -68,6 +68,7 @@ const Dashboard = () => {
         });
       });
 
+    // Initialize with existing data
     if (initialTrafficData.length > 0) {
       setRealtimeTraffic(initialTrafficData as TrafficData[]);
     }
@@ -87,6 +88,7 @@ const Dashboard = () => {
           if (newData && 'id' in newData && 'packets' in newData) {
             setRealtimeTraffic(current => {
               const updatedData = [...current];
+              // Keep only the last 24 data points for better visualization
               if (updatedData.length >= 24) {
                 updatedData.shift(); // Remove oldest data point
               }
@@ -143,6 +145,7 @@ const Dashboard = () => {
       )
       .subscribe();
 
+    // Cleanup function
     return () => {
       console.log('Cleaning up subscriptions...');
       trafficChannel.unsubscribe();
