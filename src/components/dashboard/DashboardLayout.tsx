@@ -2,6 +2,7 @@ import { StatsOverview } from "./StatsOverview";
 import { TrafficChart } from "./TrafficChart";
 import { ThreatMonitoring } from "./ThreatMonitoring";
 import { NetworkLogs } from "./NetworkLogs";
+import { NetworkTrafficLogs } from "./NetworkTrafficLogs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { NetworkThreat, NetworkLog } from "@/types/network";
@@ -31,6 +32,8 @@ export const DashboardLayout = ({
       />
       
       <TrafficChart data={trafficData} />
+      
+      <NetworkTrafficLogs />
       
       <ResizablePanelGroup 
         direction="vertical" 

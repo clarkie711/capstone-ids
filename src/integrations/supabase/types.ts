@@ -144,6 +144,39 @@ export type Database = {
         }
         Relationships: []
       }
+      network_traffic_logs: {
+        Row: {
+          created_at: string | null
+          destination_address: string
+          id: number
+          info: string | null
+          length: number
+          protocol: string
+          source_address: string
+          timestamp: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          destination_address: string
+          id?: number
+          info?: string | null
+          length: number
+          protocol: string
+          source_address: string
+          timestamp?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          destination_address?: string
+          id?: number
+          info?: string | null
+          length?: number
+          protocol?: string
+          source_address?: string
+          timestamp?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
