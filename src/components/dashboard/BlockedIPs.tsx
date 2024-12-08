@@ -1,7 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { networkService } from "@/services/networkService";
-import { Shield, Clock } from "lucide-react";
+import { Shield, Clock, HelpCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export const BlockedIPs = () => {
   const { data: blockedIPs, isLoading } = useQuery({
@@ -14,12 +19,16 @@ export const BlockedIPs = () => {
 
   if (isLoading) {
     return (
-      <div className="space-y-4 mt-8">
-        <div className="flex items-center gap-2 mb-4">
-          <Shield className="h-5 w-5 text-red-500" />
-          <h3 className="text-lg font-semibold">Blocked IPs</h3>
+      <div className="h-full relative z-30 overflow-visible">
+        <div className="flex items-center gap-3 mb-6 sticky top-0 bg-gradient-to-r from-gray-900/90 to-gray-800/90 backdrop-blur-sm p-4 rounded-lg z-40">
+          <Shield className="h-6 w-6 text-primary animate-pulse" />
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">
+              Blocked IPs
+            </h2>
+          </div>
         </div>
-        <div className="text-sm text-muted-foreground">Loading...</div>
+        <div className="text-sm text-muted-foreground px-4">Loading...</div>
       </div>
     );
   }
@@ -27,19 +36,44 @@ export const BlockedIPs = () => {
   const ipsToDisplay = Array.isArray(blockedIPs) ? blockedIPs : [];
 
   return (
-    <div className="space-y-4 mt-8">
-      <div className="flex items-center gap-2 mb-4">
-        <Shield className="h-5 w-5 text-red-500" />
-        <h3 className="text-lg font-semibold">Blocked IPs</h3>
+    <div className="h-full relative z-30 overflow-visible">
+      <div className="flex items-center gap-3 mb-6 sticky top-0 bg-gradient-to-r from-gray-900/90 to-gray-800/90 backdrop-blur-sm p-4 rounded-lg z-40">
+        <Shield className="h-6 w-6 text-primary animate-pulse" />
+        <div className="flex items-center gap-2">
+          <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">
+            Blocked IPs
+          </h2>
+          <Tooltip delayDuration={200}>
+            <TooltipTrigger asChild>
+              <button className="inline-flex items-center justify-center">
+                <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors cursor-help" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent 
+              side="right"
+              className="max-w-[300px] space-y-2 p-4 bg-gray-900/95 border border-gray-700/50 backdrop-blur-sm shadow-xl z-50"
+            >
+              <p className="font-medium text-primary">Understanding Blocked IPs:</p>
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <p>
+                  <span className="font-medium text-foreground">IP Address:</span> The unique identifier of the blocked network connection.
+                </p>
+                <p>
+                  <span className="font-medium text-foreground">Blocked Time:</span> Shows how long ago the IP was blocked from accessing the network.
+                </p>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </div>
-      <div className="space-y-3">
+      <div className="space-y-3 px-4 relative z-30 overflow-visible">
         {ipsToDisplay.length === 0 ? (
           <div className="text-sm text-muted-foreground">No blocked IPs found</div>
         ) : (
           ipsToDisplay.map((ip) => (
             <div 
               key={ip.id}
-              className="flex items-center justify-between p-3 bg-gray-800/50 border border-gray-700/50 rounded-lg"
+              className="flex items-center justify-between p-3 bg-gray-800/50 border border-gray-700/50 rounded-lg hover:bg-gray-700/50 transition-colors"
             >
               <div className="flex items-center gap-3">
                 <Shield className="h-4 w-4 text-red-500" />
