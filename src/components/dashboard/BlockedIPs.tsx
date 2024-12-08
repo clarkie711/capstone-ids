@@ -12,6 +12,12 @@ interface BlockedIP {
 }
 
 const BlockedIPEntry = ({ ip }: { ip: BlockedIP }) => {
+  const formattedDate = ip.blocked_at 
+    ? new Date(ip.blocked_at).toLocaleString()
+    : 'Unknown date';
+
+  const displayReason = ip.reason || 'No reason provided';
+
   return (
     <div className="group rounded-lg border border-gray-700/50 bg-gray-900/30 p-4 transition-all duration-300 hover:bg-gray-800/50 hover:border-gray-600/50">
       <div className="flex items-start justify-between">
@@ -23,14 +29,12 @@ const BlockedIPEntry = ({ ip }: { ip: BlockedIP }) => {
             </span>
           </div>
           <p className="text-sm text-muted-foreground">
-            {ip.reason || 'No reason provided'}
+            {displayReason}
           </p>
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Clock className="h-3 w-3" />
-          <span>
-            {new Date(ip.blocked_at || '').toLocaleString()}
-          </span>
+          <span>{formattedDate}</span>
         </div>
       </div>
     </div>
@@ -52,8 +56,18 @@ export const BlockedIPs = () => {
         throw error;
       }
       
-      console.log('Blocked IPs data:', data);
-      return data as BlockedIP[] || [];
+      console.log('Raw blocked IPs data:', data);
+      
+      // Ensure we're returning an array of properly formatted BlockedIP objects
+      const formattedData = (data || []).map((item): BlockedIP => ({
+        id: item.id,
+        ip_address: item.ip_address,
+        blocked_at: item.blocked_at || '',
+        reason: item.reason
+      }));
+      
+      console.log('Formatted blocked IPs data:', formattedData);
+      return formattedData;
     },
     refetchInterval: 5000,
   });
@@ -67,6 +81,28 @@ export const BlockedIPs = () => {
     );
   }
 
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="text-center text-muted-foreground p-4">
+          Loading...
+        </div>
+      );
+    }
+
+    if (!blockedIPsData || blockedIPsData.length === 0) {
+      return (
+        <div className="text-center text-muted-foreground p-4">
+          No blocked IPs yet
+        </div>
+      );
+    }
+
+    return blockedIPsData.map((ip: BlockedIP) => (
+      <BlockedIPEntry key={ip.id} ip={ip} />
+    ));
+  };
+
   return (
     <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm">
       <div className="flex items-center gap-3 p-4 sticky top-0 bg-gradient-to-r from-gray-900/90 to-gray-800/90 backdrop-blur-sm rounded-t-lg border-b border-gray-700/50">
@@ -76,19 +112,7 @@ export const BlockedIPs = () => {
       
       <ScrollArea className="h-[300px]">
         <div className="p-4 space-y-3">
-          {isLoading ? (
-            <div className="text-center text-muted-foreground p-4">
-              Loading...
-            </div>
-          ) : !blockedIPsData || blockedIPsData.length === 0 ? (
-            <div className="text-center text-muted-foreground p-4">
-              No blocked IPs yet
-            </div>
-          ) : (
-            blockedIPsData.map((ip: BlockedIP) => (
-              <BlockedIPEntry key={ip.id} ip={ip} />
-            ))
-          )}
+          {renderContent()}
         </div>
       </ScrollArea>
     </Card>
