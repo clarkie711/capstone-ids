@@ -11,32 +11,32 @@ interface BlockedIP {
   reason: string;
 }
 
-const BlockedIPEntry = ({ ip }: { ip: BlockedIP }) => (
-  <div
-    key={ip.id}
-    className="group rounded-lg border border-gray-700/50 bg-gray-900/30 p-4 transition-all duration-300 hover:bg-gray-800/50 hover:border-gray-600/50"
-  >
-    <div className="flex items-start justify-between">
-      <div className="space-y-1">
-        <div className="flex items-center gap-2">
-          <AlertTriangle className="h-4 w-4 text-red-500" />
-          <span className="font-medium text-foreground">
-            {ip.ip_address}
+const BlockedIPEntry = ({ ip }: { ip: BlockedIP }) => {
+  console.log('Rendering BlockedIPEntry with ip:', ip);
+  return (
+    <div className="group rounded-lg border border-gray-700/50 bg-gray-900/30 p-4 transition-all duration-300 hover:bg-gray-800/50 hover:border-gray-600/50">
+      <div className="flex items-start justify-between">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-red-500" />
+            <span className="font-medium text-foreground">
+              {ip.ip_address}
+            </span>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {ip.reason || 'No reason provided'}
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Clock className="h-3 w-3" />
+          <span>
+            {new Date(ip.blocked_at).toLocaleString()}
           </span>
         </div>
-        <p className="text-sm text-muted-foreground">
-          {ip.reason || 'No reason provided'}
-        </p>
-      </div>
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <Clock className="h-3 w-3" />
-        <span>
-          {new Date(ip.blocked_at).toLocaleString()}
-        </span>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 export const BlockedIPs = () => {
   const { data: blockedIPs, isLoading, error } = useQuery({
@@ -86,7 +86,7 @@ export const BlockedIPs = () => {
               No blocked IPs yet
             </div>
           ) : (
-            blockedIPs.map((ip) => (
+            blockedIPs.map((ip: BlockedIP) => (
               <BlockedIPEntry key={ip.id} ip={ip} />
             ))
           )}
