@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   LineChart,
   Line,
@@ -9,6 +10,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { format } from "date-fns";
+import { RefreshCw } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { TrafficData } from "@/services/networkService";
 
 interface TrafficChartProps {
@@ -16,13 +19,30 @@ interface TrafficChartProps {
 }
 
 export const TrafficChart = ({ data }: TrafficChartProps) => {
+  const queryClient = useQueryClient();
+
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['trafficData'] });
+  };
+
   return (
     <Card className="p-6 bg-gray-800/50 border-gray-700 backdrop-blur-sm">
-      <h2 className="text-lg font-semibold mb-4 text-foreground flex items-center gap-2">
-        <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">
-          Network Traffic (Real-time)
-        </span>
-      </h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">
+            Network Traffic (Real-time)
+          </span>
+        </h2>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRefresh}
+          className="gap-2"
+        >
+          <RefreshCw className="h-4 w-4" />
+          Refresh
+        </Button>
+      </div>
       <div className="h-[300px] mt-4">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
