@@ -45,7 +45,6 @@ export const BlockedIPs = () => {
   const { data: blockedIPsData, isLoading, error } = useQuery({
     queryKey: ['blockedIPs'],
     queryFn: async () => {
-      console.log('Fetching blocked IPs...');
       const { data, error } = await supabase
         .from('blocked_ips')
         .select('*')
@@ -56,55 +55,18 @@ export const BlockedIPs = () => {
         throw error;
       }
       
-      console.log('Raw blocked IPs data:', data);
-      
-      const formattedData = (data || []).map((item): BlockedIP => ({
-        id: item.id,
-        ip_address: item.ip_address,
-        blocked_at: item.blocked_at,
-        reason: item.reason
-      }));
-      
-      console.log('Formatted blocked IPs data:', formattedData);
-      return formattedData;
+      return (data || []) as BlockedIP[];
     },
     refetchInterval: 5000,
   });
 
   if (error) {
-    console.error('Query error:', error);
     return (
       <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm">
         <div className="p-4 text-red-500">Error loading blocked IPs</div>
       </Card>
     );
   }
-
-  const renderContent = () => {
-    if (isLoading) {
-      return (
-        <div className="text-center text-muted-foreground p-4">
-          Loading...
-        </div>
-      );
-    }
-
-    if (!blockedIPsData || blockedIPsData.length === 0) {
-      return (
-        <div className="text-center text-muted-foreground p-4">
-          No blocked IPs yet
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-3">
-        {blockedIPsData.map((ip: BlockedIP) => (
-          <BlockedIPEntry key={ip.id} ip={ip} />
-        ))}
-      </div>
-    );
-  };
 
   return (
     <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm">
@@ -115,7 +77,21 @@ export const BlockedIPs = () => {
       
       <ScrollArea className="h-[300px]">
         <div className="p-4">
-          {renderContent()}
+          {isLoading ? (
+            <div className="text-center text-muted-foreground">
+              Loading...
+            </div>
+          ) : !blockedIPsData || blockedIPsData.length === 0 ? (
+            <div className="text-center text-muted-foreground">
+              No blocked IPs yet
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {blockedIPsData.map((ip: BlockedIP) => (
+                <BlockedIPEntry key={ip.id} ip={ip} />
+              ))}
+            </div>
+          )}
         </div>
       </ScrollArea>
     </Card>
