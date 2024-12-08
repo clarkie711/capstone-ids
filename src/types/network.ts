@@ -59,3 +59,9 @@ export interface NetworkLog {
   message: string;
   metadata?: NetworkLogMetadata;
 }
+
+export interface TrafficData {
+  id: number;
+  time: string;
+  packets: number;
+}
