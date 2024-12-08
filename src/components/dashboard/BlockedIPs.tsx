@@ -8,11 +8,15 @@ interface BlockedIP {
   id: number;
   ip_address: string;
   blocked_at: string;
-  reason: string;
+  reason: string | null;
 }
 
 const BlockedIPEntry = ({ ip }: { ip: BlockedIP }) => {
-  console.log('Rendering BlockedIPEntry with ip:', ip);
+  if (!ip || !ip.ip_address) {
+    console.warn('Invalid IP data received:', ip);
+    return null;
+  }
+
   return (
     <div className="group rounded-lg border border-gray-700/50 bg-gray-900/30 p-4 transition-all duration-300 hover:bg-gray-800/50 hover:border-gray-600/50">
       <div className="flex items-start justify-between">
@@ -53,6 +57,11 @@ export const BlockedIPs = () => {
         throw error;
       }
       
+      if (!data) {
+        console.log('No data returned from query');
+        return [];
+      }
+      
       console.log('Blocked IPs data:', data);
       return data as BlockedIP[];
     },
@@ -68,6 +77,8 @@ export const BlockedIPs = () => {
     );
   }
 
+  const validBlockedIPs = blockedIPs?.filter(ip => ip && ip.ip_address) || [];
+
   return (
     <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm">
       <div className="flex items-center gap-3 p-4 sticky top-0 bg-gradient-to-r from-gray-900/90 to-gray-800/90 backdrop-blur-sm rounded-t-lg border-b border-gray-700/50">
@@ -81,12 +92,12 @@ export const BlockedIPs = () => {
             <div className="text-center text-muted-foreground p-4">
               Loading...
             </div>
-          ) : !blockedIPs || blockedIPs.length === 0 ? (
+          ) : validBlockedIPs.length === 0 ? (
             <div className="text-center text-muted-foreground p-4">
               No blocked IPs yet
             </div>
           ) : (
-            blockedIPs.map((ip) => (
+            validBlockedIPs.map((ip) => (
               <BlockedIPEntry key={ip.id} ip={ip} />
             ))
           )}
