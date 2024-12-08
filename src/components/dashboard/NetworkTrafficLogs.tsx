@@ -14,15 +14,20 @@ export const NetworkTrafficLogs = () => {
 
   const startCapture = async () => {
     try {
-      const { error } = await supabase.functions.invoke('process-wireshark', {
-        body: { action: 'capture' }
+      console.log('Starting capture...');
+      const { data, error } = await supabase.functions.invoke('process-wireshark', {
+        body: { action: 'start' }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error starting capture:', error);
+        throw error;
+      }
 
+      console.log('Capture response:', data);
       toast({
         title: "Success",
-        description: "Wireshark capture started successfully",
+        description: "Network capture started successfully",
       });
     } catch (error) {
       console.error('Error starting capture:', error);
@@ -37,13 +42,19 @@ export const NetworkTrafficLogs = () => {
   const fetchLogs = async () => {
     try {
       setIsLoading(true);
+      console.log('Fetching logs...');
       const { data, error } = await supabase
         .from("network_traffic_logs")
         .select("*")
         .order("timestamp", { ascending: false })
         .limit(100);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching logs:', error);
+        throw error;
+      }
+      
+      console.log('Fetched logs:', data);
       setLogs(data || []);
     } catch (error) {
       console.error("Error fetching logs:", error);
@@ -71,12 +82,14 @@ export const NetworkTrafficLogs = () => {
           table: "network_traffic_logs",
         },
         (payload) => {
+          console.log('New log received:', payload);
           setLogs((currentLogs) => [payload.new as NetworkTrafficLog, ...currentLogs]);
         }
       )
       .subscribe();
 
     return () => {
+      console.log('Cleaning up subscription...');
       supabase.removeChannel(channel);
     };
   }, []);

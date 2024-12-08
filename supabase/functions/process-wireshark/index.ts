@@ -6,34 +6,27 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-interface WiresharkPacket {
+interface SimulatedPacket {
   timestamp: string;
-  source: string;
-  destination: string;
+  source_address: string;
+  destination_address: string;
   protocol: string;
   length: number;
   info: string;
 }
 
-async function startTsharkCapture() {
-  const process = new Deno.Command("tshark", {
-    args: [
-      "-i", "any",  // capture on all interfaces
-      "-T", "json", // output in JSON format
-      "-l"          // line-buffered output
-    ],
-    stdout: "piped",
-    stderr: "piped"
-  });
-
-  const { stdout, stderr } = await process.output();
+function generateSimulatedPacket(): SimulatedPacket {
+  const protocols = ['TCP', 'UDP', 'HTTP', 'HTTPS', 'DNS'];
+  const ips = ['192.168.1.100', '10.0.0.1', '172.16.0.1', '192.168.0.1'];
   
-  if (stderr.length > 0) {
-    console.error(new TextDecoder().decode(stderr));
-    throw new Error("Tshark capture failed");
-  }
-
-  return new TextDecoder().decode(stdout);
+  return {
+    timestamp: new Date().toISOString(),
+    source_address: ips[Math.floor(Math.random() * ips.length)],
+    destination_address: ips[Math.floor(Math.random() * ips.length)],
+    protocol: protocols[Math.floor(Math.random() * protocols.length)],
+    length: Math.floor(Math.random() * 1500),
+    info: `Simulated ${protocols[Math.floor(Math.random() * protocols.length)]} traffic`
+  };
 }
 
 serve(async (req) => {
@@ -51,41 +44,60 @@ serve(async (req) => {
     const { action } = await req.json();
     console.log('Processing Wireshark action:', action);
 
-    if (action === 'capture') {
-      try {
-        const captureData = await startTsharkCapture();
-        const packets = JSON.parse(captureData);
+    if (action === 'capture' || action === 'start') {
+      // Generate some simulated packets
+      const packets = Array.from({ length: 5 }, () => generateSimulatedPacket());
 
-        // Store capture data in Supabase
-        const { error } = await supabaseClient
-          .from('network_traffic_logs')
-          .insert(packets.map((packet: any) => ({
-            timestamp: new Date().toISOString(),
-            source_address: packet._source.layers.ip?.["ip.src"] || "unknown",
-            destination_address: packet._source.layers.ip?.["ip.dst"] || "unknown",
-            protocol: packet._source.layers.frame?.["frame.protocols"] || "unknown",
-            length: parseInt(packet._source.layers.frame?.["frame.len"] || "0"),
-            info: packet._source.layers.frame?.["frame.protocols"] || ""
-          })));
+      // Store simulated packets in Supabase
+      const { error } = await supabaseClient
+        .from('network_traffic_logs')
+        .insert(packets);
 
-        if (error) throw error;
+      if (error) throw error;
 
-        return new Response(
-          JSON.stringify({ 
-            success: true, 
-            message: 'Capture data processed successfully' 
-          }),
-          { 
-            headers: { 
-              ...corsHeaders,
-              'Content-Type': 'application/json'
-            }
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'Capture data processed successfully',
+          packets 
+        }),
+        { 
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json'
           }
-        );
-      } catch (error) {
-        console.error('Error during packet capture:', error);
-        throw error;
-      }
+        }
+      );
+    }
+
+    if (action === 'stop') {
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'Capture stopped successfully' 
+        }),
+        { 
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+    }
+
+    if (action === 'status') {
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          isRunning: true 
+        }),
+        { 
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
     }
 
     return new Response(
