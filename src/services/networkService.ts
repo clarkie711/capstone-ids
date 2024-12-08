@@ -65,9 +65,8 @@ export const networkService = {
   async getTrafficData(): Promise<TrafficData[]> {
     try {
       console.log('Fetching traffic data...');
-      console.log('Supabase client config:', {
-        url: supabase.config.url,
-        headers: supabase.config.headers,
+      console.log('Supabase client initialized:', {
+        url: supabase.getClientUrl(),
       });
       
       const { data, error } = await supabase
@@ -160,8 +159,8 @@ export const networkService = {
     try {
       console.log('Fetching network logs...');
       console.log('Supabase client state:', {
-        url: supabase.config.url,
-        authConfig: supabase.auth.config,
+        url: supabase.getClientUrl(),
+        session: await supabase.auth.getSession(),
       });
 
       const { data, error } = await supabase
