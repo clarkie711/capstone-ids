@@ -20,10 +20,10 @@ export const BlockedIPs = () => {
   if (isLoading) {
     return (
       <div className="h-full relative z-30 overflow-visible">
-        <div className="flex items-center gap-3 mb-6 sticky top-0 bg-gradient-to-r from-gray-900/90 to-gray-800/90 backdrop-blur-sm p-4 rounded-lg z-40">
-          <Shield className="h-6 w-6 text-primary animate-pulse" />
+        <div className="flex items-center gap-3 mb-6 sticky top-0 bg-gradient-to-r from-red-950/90 to-red-900/90 backdrop-blur-sm p-4 rounded-lg z-40">
+          <Shield className="h-6 w-6 text-red-500 animate-pulse" />
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">
+            <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-red-400">
               Blocked IPs
             </h2>
           </div>
@@ -37,29 +37,29 @@ export const BlockedIPs = () => {
 
   return (
     <div className="h-full relative z-30 overflow-visible">
-      <div className="flex items-center gap-3 mb-6 sticky top-0 bg-gradient-to-r from-gray-900/90 to-gray-800/90 backdrop-blur-sm p-4 rounded-lg z-40">
-        <Shield className="h-6 w-6 text-primary animate-pulse" />
+      <div className="flex items-center gap-3 mb-6 sticky top-0 bg-gradient-to-r from-red-950/90 to-red-900/90 backdrop-blur-sm p-4 rounded-lg z-40">
+        <Shield className="h-6 w-6 text-red-500 animate-pulse" />
         <div className="flex items-center gap-2">
-          <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">
+          <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-red-400">
             Blocked IPs
           </h2>
           <Tooltip delayDuration={200}>
             <TooltipTrigger asChild>
               <button className="inline-flex items-center justify-center">
-                <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors cursor-help" />
+                <HelpCircle className="h-4 w-4 text-red-400 hover:text-red-300 transition-colors cursor-help" />
               </button>
             </TooltipTrigger>
             <TooltipContent 
               side="right"
-              className="max-w-[300px] space-y-2 p-4 bg-gray-900/95 border border-gray-700/50 backdrop-blur-sm shadow-xl z-50"
+              className="max-w-[300px] space-y-2 p-4 bg-red-950/95 border border-red-900/50 backdrop-blur-sm shadow-xl z-50"
             >
-              <p className="font-medium text-primary">Understanding Blocked IPs:</p>
-              <div className="space-y-2 text-sm text-muted-foreground">
+              <p className="font-medium text-red-400">Understanding Blocked IPs:</p>
+              <div className="space-y-2 text-sm text-red-200/70">
                 <p>
-                  <span className="font-medium text-foreground">IP Address:</span> The unique identifier of the blocked network connection.
+                  <span className="font-medium text-red-200">IP Address:</span> The unique identifier of the blocked network connection.
                 </p>
                 <p>
-                  <span className="font-medium text-foreground">Blocked Time:</span> Shows how long ago the IP was blocked from accessing the network.
+                  <span className="font-medium text-red-200">Blocked Time:</span> Shows how long ago the IP was blocked from accessing the network.
                 </p>
               </div>
             </TooltipContent>
@@ -68,18 +68,18 @@ export const BlockedIPs = () => {
       </div>
       <div className="space-y-3 px-4 relative z-30 overflow-visible">
         {ipsToDisplay.length === 0 ? (
-          <div className="text-sm text-muted-foreground">No blocked IPs found</div>
+          <div className="text-sm text-red-400/70">No blocked IPs found</div>
         ) : (
           ipsToDisplay.map((ip) => (
             <div 
               key={ip.id}
-              className="flex items-center justify-between p-3 bg-gray-800/50 border border-gray-700/50 rounded-lg hover:bg-gray-700/50 transition-colors"
+              className="flex items-center justify-between p-3 bg-red-950/30 border border-red-900/50 rounded-lg hover:bg-red-900/30 transition-colors"
             >
               <div className="flex items-center gap-3">
                 <Shield className="h-4 w-4 text-red-500" />
-                <span className="font-mono">{ip.ip_address}</span>
+                <span className="font-mono text-red-200">{ip.ip_address}</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 text-sm text-red-400/70">
                 <Clock className="h-4 w-4" />
                 <span>
                   {ip.blocked_at ? formatDistanceToNow(new Date(ip.blocked_at), { addSuffix: true }) : 'Unknown'}
