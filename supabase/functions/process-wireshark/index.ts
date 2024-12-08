@@ -9,24 +9,48 @@ const corsHeaders = {
 let isCapturing = false;
 let captureInterval: number | null = null;
 
+// Common protocols for simulation
+const protocols = ['TCP', 'UDP', 'ICMP', 'HTTP', 'HTTPS', 'DNS'];
+const commonPorts = {
+  HTTP: 80,
+  HTTPS: 443,
+  DNS: 53,
+  SSH: 22,
+  FTP: 21,
+};
+
+// Generate realistic IP addresses
+function generateIP() {
+  return Array.from({ length: 4 }, () => Math.floor(Math.random() * 256)).join('.');
+}
+
+// Generate packet info based on protocol
+function generatePacketInfo(protocol: string, srcPort: number, dstPort: number) {
+  switch (protocol) {
+    case 'HTTP':
+      return `${srcPort} → ${dstPort} [SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM=1`;
+    case 'DNS':
+      return `Standard query 0x${Math.floor(Math.random() * 65535).toString(16)} A example.com`;
+    case 'TCP':
+      return `${srcPort} → ${dstPort} [ACK] Seq=${Math.floor(Math.random() * 1000)} Ack=${Math.floor(Math.random() * 1000)} Win=64240`;
+    default:
+      return `${srcPort} → ${dstPort} Len=${Math.floor(Math.random() * 1000)}`;
+  }
+}
+
 // Enhanced packet simulation with more realistic network patterns
 function generateSimulatedPacket() {
-  // Base packet size between 64 (minimum Ethernet frame) and 1500 (typical MTU)
-  const baseSize = Math.floor(Math.random() * (1500 - 64)) + 64;
+  const protocol = protocols[Math.floor(Math.random() * protocols.length)];
+  const sourcePort = Math.floor(Math.random() * 65535);
+  const destPort = commonPorts[protocol as keyof typeof commonPorts] || Math.floor(Math.random() * 65535);
   
-  // Add some variation based on time of day to simulate real traffic patterns
-  const hour = new Date().getHours();
-  let multiplier = 1;
-  
-  // Simulate higher traffic during business hours
-  if (hour >= 9 && hour <= 17) {
-    multiplier = 1.5;
-  } else if (hour >= 1 && hour <= 5) {
-    // Lower traffic during early morning hours
-    multiplier = 0.5;
-  }
-  
-  return Math.floor(baseSize * multiplier);
+  return {
+    source_address: generateIP(),
+    destination_address: generateIP(),
+    protocol,
+    length: Math.floor(Math.random() * (1500 - 64)) + 64, // Between 64 and 1500 bytes
+    info: generatePacketInfo(protocol, sourcePort, destPort),
+  };
 }
 
 serve(async (req) => {
@@ -40,15 +64,6 @@ serve(async (req) => {
     const action = body?.action;
     console.log('Processing Wireshark action:', action);
 
-    // Validate action
-    if (!action || typeof action !== 'string') {
-      console.error('Invalid or missing action in request');
-      return new Response(
-        JSON.stringify({ success: false, message: 'Invalid or missing action' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      );
-    }
-
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -59,7 +74,6 @@ serve(async (req) => {
       
       if (isCapturing) {
         console.log('Capture already running, stopping first...');
-        // Clear existing interval if it exists
         if (captureInterval !== null) {
           clearInterval(captureInterval);
           captureInterval = null;
@@ -69,7 +83,7 @@ serve(async (req) => {
 
       isCapturing = true;
 
-      // Start simulated packet capture with enhanced error handling
+      // Start simulated packet capture
       captureInterval = setInterval(async () => {
         if (!isCapturing) {
           if (captureInterval !== null) {
@@ -80,21 +94,32 @@ serve(async (req) => {
         }
 
         try {
-          const packetSize = generateSimulatedPacket();
-          const { error: insertError } = await supabaseClient
+          const packet = generateSimulatedPacket();
+          
+          // Insert into network_traffic_logs
+          const { error: logsError } = await supabaseClient
+            .from('network_traffic_logs')
+            .insert([packet]);
+
+          if (logsError) {
+            console.error('Error inserting network traffic log:', logsError);
+            throw logsError;
+          }
+
+          // Update traffic_data
+          const { error: trafficError } = await supabaseClient
             .from('traffic_data')
             .insert([{
               time: new Date().toISOString(),
-              packets: packetSize
+              packets: packet.length
             }]);
 
-          if (insertError) {
-            console.error('Error inserting traffic data:', insertError);
-            throw insertError;
+          if (trafficError) {
+            console.error('Error inserting traffic data:', trafficError);
+            throw trafficError;
           }
         } catch (e) {
           console.error('Error in capture interval:', e);
-          // Don't stop capture on single error, just log it
           if (e instanceof Error) {
             console.error('Capture error details:', e.message);
           }
