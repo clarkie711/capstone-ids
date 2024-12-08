@@ -1,17 +1,24 @@
 import { protocolWeights, commonPorts, generatePrivateIP, generatePublicIP } from './networkUtils.ts';
 
 function selectWeightedProtocol() {
+  console.log('Selecting weighted protocol...');
   const total = Object.values(protocolWeights).reduce((a, b) => a + b, 0);
   let random = Math.random() * total;
   
   for (const [protocol, weight] of Object.entries(protocolWeights)) {
     random -= weight;
-    if (random <= 0) return protocol;
+    if (random <= 0) {
+      console.log('Selected protocol:', protocol);
+      return protocol;
+    }
   }
+  console.log('Defaulting to TCP protocol');
   return 'TCP';
 }
 
 function generatePacketInfo(protocol: string, srcPort: number, dstPort: number) {
+  console.log(`Generating packet info for protocol: ${protocol}, srcPort: ${srcPort}, dstPort: ${dstPort}`);
+  
   const templates = {
     HTTP: [
       `GET /api/v1/users HTTP/1.1`,
@@ -52,21 +59,26 @@ function generatePacketInfo(protocol: string, srcPort: number, dstPort: number) 
   };
 
   const template = templates[protocol as keyof typeof templates] || templates.TCP;
-  return `${srcPort} → ${dstPort} ${template[Math.floor(Math.random() * template.length)]}`;
+  const info = `${srcPort} → ${dstPort} ${template[Math.floor(Math.random() * template.length)]}`;
+  console.log('Generated packet info:', info);
+  return info;
 }
 
 export function generateSimulatedPacket() {
+  console.log('Generating simulated packet...');
   const protocol = selectWeightedProtocol();
   const sourcePort = Math.floor(Math.random() * 65535);
   const destPort = commonPorts[protocol as keyof typeof commonPorts] || Math.floor(Math.random() * 65535);
   
   const isInternalToExternal = Math.random() < 0.7;
-  
-  return {
+  const packet = {
     source_address: isInternalToExternal ? generatePrivateIP() : generatePublicIP(),
     destination_address: isInternalToExternal ? generatePublicIP() : generatePrivateIP(),
     protocol,
     length: Math.floor(Math.random() * (1500 - 64)) + 64,
     info: generatePacketInfo(protocol, sourcePort, destPort),
   };
+  
+  console.log('Generated packet:', packet);
+  return packet;
 }

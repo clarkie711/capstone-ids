@@ -22,6 +22,7 @@ export const commonPorts = {
 };
 
 export function generatePrivateIP() {
+  console.log('Generating private IP address...');
   const ranges = [
     { start: [192, 168, 0, 0], end: [192, 168, 255, 255] },
     { start: [10, 0, 0, 0], end: [10, 255, 255, 255] },
@@ -29,21 +30,28 @@ export function generatePrivateIP() {
   ];
   
   const range = ranges[Math.floor(Math.random() * ranges.length)];
-  return range.start.map((start, i) => {
+  const ip = range.start.map((start, i) => {
     const end = range.end[i];
     return Math.floor(Math.random() * (end - start + 1)) + start;
   }).join('.');
+  
+  console.log('Generated private IP:', ip);
+  return ip;
 }
 
 export function generatePublicIP() {
+  console.log('Generating public IP address...');
   const nonPrivateRanges = [
     [1, 9], [11, 171], [173, 191], [193, 223]
   ];
   const range = nonPrivateRanges[Math.floor(Math.random() * nonPrivateRanges.length)];
-  return [
+  const ip = [
     Math.floor(Math.random() * (range[1] - range[0] + 1)) + range[0],
     Math.floor(Math.random() * 256),
     Math.floor(Math.random() * 256),
     Math.floor(Math.random() * 256)
   ].join('.');
+  
+  console.log('Generated public IP:', ip);
+  return ip;
 }

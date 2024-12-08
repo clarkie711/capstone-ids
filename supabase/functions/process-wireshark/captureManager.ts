@@ -7,6 +7,7 @@ export class CaptureManager {
   private captureInterval: number | null = null;
 
   constructor(supabaseUrl: string, supabaseKey: string) {
+    console.log('Initializing CaptureManager...');
     this.supabaseClient = createClient(supabaseUrl, supabaseKey);
   }
 
@@ -19,9 +20,11 @@ export class CaptureManager {
     }
 
     this.isCapturing = true;
+    console.log('Capture status set to:', this.isCapturing);
 
     this.captureInterval = setInterval(async () => {
       if (!this.isCapturing) {
+        console.log('Capture stopped, clearing interval...');
         if (this.captureInterval !== null) {
           clearInterval(this.captureInterval);
           this.captureInterval = null;
@@ -31,9 +34,11 @@ export class CaptureManager {
 
       try {
         const packetsToGenerate = Math.floor(Math.random() * 5) + 1;
+        console.log(`Generating ${packetsToGenerate} packets...`);
         
         for (let i = 0; i < packetsToGenerate; i++) {
           const packet = generateSimulatedPacket();
+          console.log(`Inserting packet ${i + 1}/${packetsToGenerate}:`, packet);
           
           const { error: logsError } = await this.supabaseClient
             .from('network_traffic_logs')
@@ -60,6 +65,7 @@ export class CaptureManager {
         console.error('Error in capture interval:', e);
         if (e instanceof Error) {
           console.error('Capture error details:', e.message);
+          console.error('Stack trace:', e.stack);
         }
       }
     }, Math.floor(Math.random() * 500) + 500);
@@ -72,10 +78,12 @@ export class CaptureManager {
     if (this.captureInterval !== null) {
       clearInterval(this.captureInterval);
       this.captureInterval = null;
+      console.log('Capture interval cleared');
     }
   }
 
   getStatus() {
+    console.log('Getting capture status:', this.isCapturing);
     return this.isCapturing;
   }
 }
