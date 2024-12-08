@@ -104,30 +104,22 @@ export const networkService = {
     }
   },
 
-  async getActiveConnections(): Promise<number> {
+  async getBlockedIPsList() {
     try {
-      const { data: connectionData, error: connectionError } = await supabase
-        .from('active_connections')
-        .select('count')
-        .single();
+      const { data, error } = await supabase
+        .from('blocked_ips')
+        .select('*')
+        .order('blocked_at', { ascending: false });
 
-      if (connectionError) {
-        console.error('Error fetching active connections:', connectionError);
-        return 42;
+      if (error) {
+        console.error('Error fetching blocked IPs:', error);
+        return [];
       }
-
-      const { error: processError } = await supabase.functions.invoke('process-wireshark', {
-        body: { action: 'update' }
-      });
-
-      if (processError) {
-        console.error('Error processing Wireshark data:', processError);
-      }
-
-      return connectionData?.count || 42;
+      
+      return data || [];
     } catch (error) {
-      console.error('Error in getActiveConnections:', error);
-      return 42;
+      console.error('Error in getBlockedIPsList:', error);
+      return [];
     }
   },
 

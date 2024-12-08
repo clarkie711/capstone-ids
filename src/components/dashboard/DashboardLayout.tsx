@@ -1,15 +1,13 @@
-import { StatsOverview } from "./StatsOverview";
 import { TrafficChart } from "./TrafficChart";
 import { ThreatMonitoring } from "./ThreatMonitoring";
 import { NetworkLogs } from "./NetworkLogs";
 import { NetworkTrafficLogs } from "./NetworkTrafficLogs";
+import { BlockedIPs } from "./BlockedIPs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { NetworkThreat, NetworkLog } from "@/types/network";
 
 interface DashboardLayoutProps {
-  activeConnections: number;
-  blockedIPs: number;
   trafficData: any[];
   threats: NetworkThreat[];
   networkLogs: NetworkLog[];
@@ -17,20 +15,13 @@ interface DashboardLayoutProps {
 }
 
 export const DashboardLayout = ({
-  activeConnections,
-  blockedIPs,
   trafficData,
   threats,
   networkLogs,
   onFalsePositive,
 }: DashboardLayoutProps) => {
   return (
-    <div className="space-y-6 animate-fade-in">
-      <StatsOverview
-        activeConnections={activeConnections}
-        blockedIPs={blockedIPs}
-      />
-      
+    <div className="space-y-6 animate-fade-in">      
       <TrafficChart data={trafficData} />
       
       <NetworkTrafficLogs />
@@ -53,6 +44,7 @@ export const DashboardLayout = ({
           <ScrollArea className="h-[400px] relative z-20 overflow-visible">
             <div className="p-4 space-y-6 overflow-visible">
               <ThreatMonitoring threats={threats} onFalsePositive={onFalsePositive} />
+              <BlockedIPs />
             </div>
           </ScrollArea>
         </ResizablePanel>

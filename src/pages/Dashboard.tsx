@@ -4,7 +4,7 @@ import { useNetworkData } from "@/hooks/useNetworkData";
 import { useThreatManagement } from "@/hooks/useThreatManagement";
 
 const Dashboard = () => {
-  const { realtimeTraffic, activeConnectionsCount, blockedIPs, networkLogs } = useNetworkData();
+  const { realtimeTraffic, networkLogs } = useNetworkData();
   const { threats, handleFalsePositive } = useThreatManagement();
 
   return (
@@ -12,8 +12,6 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto space-y-6">
         <DashboardHeader />
         <DashboardLayout
-          activeConnections={activeConnectionsCount}
-          blockedIPs={blockedIPs}
           trafficData={realtimeTraffic}
           threats={threats}
           networkLogs={networkLogs}
