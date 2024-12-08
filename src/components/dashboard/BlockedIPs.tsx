@@ -51,11 +51,10 @@ export const BlockedIPs = () => {
         .order('blocked_at', { ascending: false });
       
       if (error) {
-        console.error('Error fetching blocked IPs:', error);
         throw error;
       }
       
-      return (data || []) as BlockedIP[];
+      return data as BlockedIP[];
     },
     refetchInterval: 5000,
   });
@@ -87,7 +86,7 @@ export const BlockedIPs = () => {
             </div>
           ) : (
             <div className="space-y-3">
-              {blockedIPsData.map((ip: BlockedIP) => (
+              {blockedIPsData.map((ip) => (
                 <BlockedIPEntry key={ip.id} ip={ip} />
               ))}
             </div>
