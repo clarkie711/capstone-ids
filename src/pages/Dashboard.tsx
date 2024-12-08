@@ -16,7 +16,7 @@ type ActiveConnectionRow = Database['public']['Tables']['active_connections']['R
 
 interface TrafficData {
   id: number;
-  time: string | null;
+  time: string;
   packets: number;
 }
 
@@ -68,7 +68,7 @@ const Dashboard = () => {
         (payload: RealtimePostgresChangesPayload<TrafficDataRow>) => {
           console.log('Received traffic update:', payload);
           const newData = payload.new;
-          if (newData && typeof newData.id === 'number' && typeof newData.packets === 'number') {
+          if (newData && 'id' in newData && 'packets' in newData) {
             setRealtimeTraffic(current => {
               const updatedData = [...current];
               if (updatedData.length >= 24) {
@@ -76,7 +76,7 @@ const Dashboard = () => {
               }
               updatedData.push({
                 id: newData.id,
-                time: newData.time || new Date().toISOString(),
+                time: newData.time?.toISOString() || new Date().toISOString(),
                 packets: newData.packets
               });
               return updatedData;
@@ -98,13 +98,14 @@ const Dashboard = () => {
         (payload: RealtimePostgresChangesPayload<ActiveConnectionRow>) => {
           console.log('Received connections update:', payload);
           const newData = payload.new;
-          if (newData && typeof newData.count === 'number') {
+          if (newData && 'count' in newData) {
             setActiveConnectionsCount(newData.count);
           }
         }
       )
       .subscribe();
 
+    // Subscribe to real-time threats updates
     const threatChannel = supabase
       .channel('threat_updates')
       .on('postgres_changes',
