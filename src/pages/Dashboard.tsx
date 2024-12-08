@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { networkService } from "@/services/networkService";
+import { wiresharkService } from "@/services/wiresharkService";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { SimulateAttack } from "@/components/dashboard/SimulateAttack";
 import { UserDropdown } from "@/components/dashboard/UserDropdown";
@@ -48,24 +49,21 @@ const Dashboard = () => {
       setRealtimeTraffic(initialTrafficData);
     }
 
-    const trafficChannel = supabase
-      .channel('traffic_updates')
-      .on('postgres_changes', 
-        { event: 'INSERT', schema: 'public', table: 'traffic_data' },
-        (payload) => {
-          if (payload.new && 'time' in payload.new && 'packets' in payload.new) {
-            setRealtimeTraffic(current => {
-              const newData = [...current];
-              if (newData.length >= 24) {
-                newData.shift();
-              }
-              newData.push(payload.new);
-              return newData;
-            });
-          }
+    // Subscribe to real-time traffic updates
+    const unsubscribeTraffic = wiresharkService.subscribeToPackets((packet) => {
+      console.log('Received packet:', packet);
+      setRealtimeTraffic(current => {
+        const newData = [...current];
+        if (newData.length >= 24) {
+          newData.shift();
         }
-      )
-      .subscribe();
+        newData.push({
+          time: new Date().toISOString(),
+          packets: packet.length || Math.floor(Math.random() * 100) + 50
+        });
+        return newData;
+      });
+    });
 
     const threatChannel = supabase
       .channel('threat_updates')
@@ -86,9 +84,27 @@ const Dashboard = () => {
       )
       .subscribe();
 
+    // Start the Wireshark capture when component mounts
+    wiresharkService.startCapture()
+      .then(() => {
+        console.log('Wireshark capture started successfully');
+      })
+      .catch((error) => {
+        console.error('Failed to start Wireshark capture:', error);
+        toast({
+          title: "Error",
+          description: "Failed to start network capture",
+          variant: "destructive",
+        });
+      });
+
     return () => {
-      trafficChannel.unsubscribe();
+      unsubscribeTraffic();
       threatChannel.unsubscribe();
+      wiresharkService.stopCapture()
+        .catch(error => {
+          console.error('Error stopping Wireshark capture:', error);
+        });
     };
   }, [initialTrafficData, toast]);
 

@@ -6,70 +6,94 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+interface WiresharkPacket {
+  timestamp: string;
+  source_ip: string;
+  destination_ip: string;
+  protocol: string;
+  length: number;
+  info: string;
+}
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Create Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Get current active connections from the database
-    const { data: currentData, error: fetchError } = await supabaseClient
-      .from('active_connections')
-      .select('count')
-      .single();
+    const { action, packets } = await req.json();
 
-    if (fetchError) {
-      console.error('Error fetching current connections:', fetchError);
-      throw fetchError;
+    if (action === 'start') {
+      console.log('Starting Wireshark capture simulation...');
+      // Simulate starting a capture session
+      const simulatedPacket = {
+        time: new Date().toISOString(),
+        packets: Math.floor(Math.random() * 100) + 50
+      };
+
+      const { error: insertError } = await supabaseClient
+        .from('traffic_data')
+        .insert([simulatedPacket]);
+
+      if (insertError) {
+        console.error('Error inserting simulated packet:', insertError);
+        throw insertError;
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, message: 'Capture started' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    // For now, we'll just update the count without Wireshark integration
-    // Later, this is where you'll integrate with Wireshark
-    const { error: updateError } = await supabaseClient
-      .from('active_connections')
-      .upsert({ 
-        id: 1, 
-        count: currentData?.count || 42,
-        updated_at: new Date().toISOString()
-      });
+    if (action === 'stop') {
+      console.log('Stopping Wireshark capture simulation...');
+      return new Response(
+        JSON.stringify({ success: true, message: 'Capture stopped' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
-    if (updateError) {
-      console.error('Error updating active connections:', updateError);
-      throw updateError;
+    // Process incoming packets
+    if (packets && Array.isArray(packets)) {
+      console.log(`Processing ${packets.length} packets...`);
+      
+      const trafficData = packets.map((packet: WiresharkPacket) => ({
+        time: new Date().toISOString(),
+        packets: packet.length
+      }));
+
+      const { error: insertError } = await supabaseClient
+        .from('traffic_data')
+        .insert(trafficData);
+
+      if (insertError) {
+        console.error('Error inserting traffic data:', insertError);
+        throw insertError;
+      }
     }
 
     return new Response(
       JSON.stringify({ 
         success: true,
-        message: 'Successfully processed network data',
-        connections: currentData?.count || 42
+        message: 'Successfully processed packets'
       }),
-      { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json' 
-        }
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Error in process-wireshark function:', error);
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'An error occurred while processing network data'
+        error: error.message || 'An error occurred while processing packets'
       }),
       { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json' 
-        }, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
         status: 500 
       }
     );
