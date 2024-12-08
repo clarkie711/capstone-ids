@@ -38,7 +38,7 @@ const BlockedIPEntry = ({ ip }: { ip: BlockedIP }) => {
 };
 
 export const BlockedIPs = () => {
-  const { data: blockedIPsData = [], isLoading, error } = useQuery({
+  const { data: blockedIPsData, isLoading, error } = useQuery({
     queryKey: ['blockedIPs'],
     queryFn: async () => {
       console.log('Fetching blocked IPs...');
@@ -53,7 +53,7 @@ export const BlockedIPs = () => {
       }
       
       console.log('Blocked IPs data:', data);
-      return Array.isArray(data) ? data : [];
+      return data || [];
     },
     refetchInterval: 5000,
   });
@@ -67,15 +67,8 @@ export const BlockedIPs = () => {
     );
   }
 
-  // Ensure we're working with an array and filter out any invalid entries
-  const blockedIPs = Array.isArray(blockedIPsData) 
-    ? blockedIPsData.filter((ip): ip is BlockedIP => 
-        ip !== null && 
-        typeof ip === 'object' && 
-        'ip_address' in ip && 
-        typeof ip.ip_address === 'string'
-      )
-    : [];
+  // Convert data to array and ensure type safety
+  const blockedIPs = (blockedIPsData || []) as BlockedIP[];
 
   return (
     <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm">
