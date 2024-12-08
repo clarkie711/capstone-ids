@@ -11,8 +11,14 @@ import { LayoutDashboard } from "lucide-react";
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
-type ActiveConnection = Database['public']['Tables']['active_connections']['Row'];
-type TrafficData = Database['public']['Tables']['traffic_data']['Row'];
+type TrafficDataRow = Database['public']['Tables']['traffic_data']['Row'];
+type ActiveConnectionRow = Database['public']['Tables']['active_connections']['Row'];
+
+interface TrafficData {
+  id: number;
+  time: string | null;
+  packets: number;
+}
 
 const Dashboard = () => {
   const { toast } = useToast();
@@ -47,7 +53,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (initialTrafficData.length > 0) {
-      setRealtimeTraffic(initialTrafficData);
+      setRealtimeTraffic(initialTrafficData as TrafficData[]);
     }
 
     // Subscribe to real-time traffic updates
@@ -59,7 +65,7 @@ const Dashboard = () => {
           schema: 'public', 
           table: 'traffic_data' 
         },
-        (payload: RealtimePostgresChangesPayload<TrafficData>) => {
+        (payload: RealtimePostgresChangesPayload<TrafficDataRow>) => {
           console.log('Received traffic update:', payload);
           if (payload.new) {
             setRealtimeTraffic(current => {
@@ -69,7 +75,7 @@ const Dashboard = () => {
               }
               newData.push({
                 id: payload.new.id,
-                time: payload.new.time,
+                time: payload.new.time || new Date().toISOString(),
                 packets: payload.new.packets
               });
               return newData;
@@ -88,9 +94,9 @@ const Dashboard = () => {
           schema: 'public',
           table: 'active_connections'
         },
-        (payload: RealtimePostgresChangesPayload<ActiveConnection>) => {
+        (payload: RealtimePostgresChangesPayload<ActiveConnectionRow>) => {
           console.log('Received connections update:', payload);
-          if (payload.new) {
+          if (payload.new?.count !== undefined) {
             setActiveConnectionsCount(payload.new.count);
           }
         }
