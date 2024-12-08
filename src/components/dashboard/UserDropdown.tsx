@@ -55,7 +55,8 @@ export const UserDropdown = () => {
         <DropdownMenuLabel className="font-semibold">My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem 
-          className="cursor-default hover:bg-gray-200 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-600"
+          onClick={() => navigate("/account")}
+          className="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-600"
         >
           <UserCircle className="mr-2 h-4 w-4" />
           <div className="flex flex-col">
