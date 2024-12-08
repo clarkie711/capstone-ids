@@ -25,27 +25,27 @@ export const DashboardLayout = ({
       
       <NetworkTrafficLogs />
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="space-y-8">
+        {/* Network Logs Section */}
+        <div className="rounded-lg border border-gray-700 bg-gray-800/50 backdrop-blur-sm shadow-xl p-4">
+          <ScrollArea className="h-[500px]">
+            <NetworkLogs logs={networkLogs} />
+          </ScrollArea>
+        </div>
+
         {/* Active Threats Section */}
         <div className="rounded-lg border border-gray-700 bg-gray-800/50 backdrop-blur-sm shadow-xl p-4">
-          <ScrollArea className="h-[600px]">
+          <ScrollArea className="h-[500px]">
             <ThreatMonitoring threats={threats} onFalsePositive={onFalsePositive} />
           </ScrollArea>
         </div>
 
-        {/* Network Logs Section */}
+        {/* Blocked IPs Section */}
         <div className="rounded-lg border border-gray-700 bg-gray-800/50 backdrop-blur-sm shadow-xl p-4">
-          <ScrollArea className="h-[600px]">
-            <NetworkLogs logs={networkLogs} />
+          <ScrollArea className="h-[400px]">
+            <BlockedIPs />
           </ScrollArea>
         </div>
-      </div>
-
-      {/* Blocked IPs Section */}
-      <div className="rounded-lg border border-gray-700 bg-gray-800/50 backdrop-blur-sm shadow-xl p-4">
-        <ScrollArea className="h-[400px]">
-          <BlockedIPs />
-        </ScrollArea>
       </div>
     </div>
   );
