@@ -19,8 +19,8 @@ export const BlockedIPs = () => {
 
   if (isLoading) {
     return (
-      <div className="h-full relative z-30 overflow-visible">
-        <div className="flex items-center gap-3 mb-6 sticky top-0 bg-gradient-to-r from-red-950/90 to-red-900/90 backdrop-blur-sm p-4 rounded-lg z-40">
+      <div className="h-full relative">
+        <div className="flex items-center gap-3 mb-6 sticky top-0 bg-gradient-to-r from-red-950/90 to-red-900/90 backdrop-blur-sm p-4 rounded-lg">
           <Shield className="h-6 w-6 text-red-500 animate-pulse" />
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-red-400">
@@ -36,14 +36,14 @@ export const BlockedIPs = () => {
   const ipsToDisplay = Array.isArray(blockedIPs) ? blockedIPs : [];
 
   return (
-    <div className="h-full relative z-30 overflow-visible">
-      <div className="flex items-center gap-3 mb-6 sticky top-0 bg-gradient-to-r from-red-950/90 to-red-900/90 backdrop-blur-sm p-4 rounded-lg z-40">
+    <div className="h-full relative">
+      <div className="flex items-center gap-3 mb-6 sticky top-0 bg-gradient-to-r from-red-950/90 to-red-900/90 backdrop-blur-sm p-4 rounded-lg">
         <Shield className="h-6 w-6 text-red-500 animate-pulse" />
         <div className="flex items-center gap-2">
           <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-red-400">
             Blocked IPs
           </h2>
-          <Tooltip delayDuration={200}>
+          <Tooltip>
             <TooltipTrigger asChild>
               <button className="inline-flex items-center justify-center">
                 <HelpCircle className="h-4 w-4 text-red-400 hover:text-red-300 transition-colors cursor-help" />
@@ -51,7 +51,7 @@ export const BlockedIPs = () => {
             </TooltipTrigger>
             <TooltipContent 
               side="right"
-              className="max-w-[300px] space-y-2 p-4 bg-red-950/95 border border-red-900/50 backdrop-blur-sm shadow-xl z-50"
+              className="max-w-[300px] space-y-2 p-4 bg-red-950/95 border border-red-900/50 backdrop-blur-sm shadow-xl"
             >
               <p className="font-medium text-red-400">Understanding Blocked IPs:</p>
               <div className="space-y-2 text-sm text-red-200/70">
@@ -66,7 +66,7 @@ export const BlockedIPs = () => {
           </Tooltip>
         </div>
       </div>
-      <div className="space-y-3 px-4 relative z-30 overflow-visible">
+      <div className="space-y-3 px-4">
         {ipsToDisplay.length === 0 ? (
           <div className="text-sm text-red-400/70">No blocked IPs found</div>
         ) : (

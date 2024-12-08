@@ -14,14 +14,14 @@ interface ThreatMonitoringProps {
 
 export const ThreatMonitoring = ({ threats, onFalsePositive }: ThreatMonitoringProps) => {
   return (
-    <div className="h-full relative z-30 overflow-visible">
-      <div className="flex items-center gap-3 mb-6 sticky top-0 bg-gradient-to-r from-gray-900/90 to-gray-800/90 backdrop-blur-sm p-4 rounded-lg z-40">
+    <div className="h-full relative">
+      <div className="flex items-center gap-3 mb-6 sticky top-0 bg-gradient-to-r from-gray-900/90 to-gray-800/90 backdrop-blur-sm p-4 rounded-lg">
         <Shield className="h-6 w-6 text-primary animate-pulse" />
         <div className="flex items-center gap-2">
           <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">
             Active Threats
           </h2>
-          <Tooltip delayDuration={200}>
+          <Tooltip>
             <TooltipTrigger asChild>
               <button className="inline-flex items-center justify-center">
                 <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors cursor-help" />
@@ -29,7 +29,7 @@ export const ThreatMonitoring = ({ threats, onFalsePositive }: ThreatMonitoringP
             </TooltipTrigger>
             <TooltipContent 
               side="right"
-              className="max-w-[300px] space-y-2 p-4 bg-gray-900/95 border border-gray-700/50 backdrop-blur-sm shadow-xl z-50"
+              className="max-w-[300px] space-y-2 p-4 bg-gray-900/95 border border-gray-700/50 backdrop-blur-sm shadow-xl"
             >
               <p className="font-medium text-primary">Understanding Threat Detection:</p>
               <div className="space-y-2 text-sm text-muted-foreground">
@@ -47,7 +47,7 @@ export const ThreatMonitoring = ({ threats, onFalsePositive }: ThreatMonitoringP
           </Tooltip>
         </div>
       </div>
-      <div className="space-y-4 px-4 relative z-30 overflow-visible">
+      <div className="space-y-4 px-4">
         {threats
           .filter(threat => !threat.is_false_positive)
           .map((threat) => (
