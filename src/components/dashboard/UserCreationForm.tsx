@@ -74,7 +74,7 @@ export const UserCreationForm = ({ onUserCreated }: UserCreationFormProps) => {
       });
 
       form.reset();
-      onUserCreated();
+      onUserCreated(); // This will trigger the user list refresh
     } catch (error) {
       console.error("Error creating user:", error);
       toast({
@@ -164,7 +164,6 @@ export const UserCreationForm = ({ onUserCreated }: UserCreationFormProps) => {
                 </FormControl>
                 <SelectContent>
                   <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="manager">Manager</SelectItem>
                   <SelectItem value="user">User</SelectItem>
                 </SelectContent>
               </Select>
