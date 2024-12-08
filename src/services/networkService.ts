@@ -41,54 +41,79 @@ export interface TrafficData {
 
 export const networkService = {
   async getTrafficData(): Promise<TrafficData[]> {
+    console.log('Fetching traffic data...');
     const { data, error } = await supabase
       .from('traffic_data')
       .select('*')
       .order('time', { ascending: true })
       .limit(24);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching traffic data:', error);
+      throw error;
+    }
+    console.log('Traffic data fetched:', data);
     return data || [];
   },
 
   async getRecentAlerts(): Promise<NetworkAlert[]> {
+    console.log('Fetching recent alerts...');
     const { data, error } = await supabase
       .from('alerts')
       .select('*')
       .order('timestamp', { ascending: false })
       .limit(10);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching recent alerts:', error);
+      throw error;
+    }
+    console.log('Recent alerts fetched:', data);
     return (data || []) as NetworkAlert[];
   },
 
   async getActiveConnections(): Promise<number> {
+    console.log('Fetching active connections...');
     const { data, error } = await supabase
       .from('active_connections')
       .select('count')
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching active connections:', error);
+      throw error;
+    }
+    console.log('Active connections fetched:', data);
     return data?.count || 0;
   },
 
   async getBlockedIPs(): Promise<number> {
+    console.log('Fetching blocked IPs...');
     const { count, error } = await supabase
       .from('blocked_ips')
       .select('*', { count: 'exact' });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching blocked IPs:', error);
+      throw error;
+    }
+    console.log('Blocked IPs count:', count);
     return count || 0;
   },
 
   async getActiveThreats(): Promise<NetworkThreat[]> {
+    console.log('Fetching active threats...');
     const { data, error } = await supabase
       .from('network_threats')
       .select('*')
       .eq('is_false_positive', false)
       .order('detected_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching active threats:', error);
+      throw error;
+    }
+    console.log('Active threats fetched:', data);
     const threats = (data || []).map(threat => ({
       ...threat,
       location: threat.location as unknown as Location,
@@ -103,21 +128,31 @@ export const networkService = {
     severity: 'low' | 'medium' | 'high';
     details: any;
   }) {
+    console.log('Logging traffic analysis:', analysis);
     const { error } = await supabase
       .from('traffic_analysis')
       .insert([analysis]);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error logging traffic analysis:', error);
+      throw error;
+    }
+    console.log('Traffic analysis logged successfully');
   },
 
   async getNetworkLogs(): Promise<NetworkLog[]> {
+    console.log('Fetching network logs...');
     const { data, error } = await supabase
       .from('network_logs')
       .select('*')
       .order('timestamp', { ascending: false })
       .limit(50);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching network logs:', error);
+      throw error;
+    }
+    console.log('Network logs fetched:', data);
     return (data || []) as NetworkLog[];
   },
 };
