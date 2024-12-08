@@ -13,7 +13,9 @@ const Dashboard = () => {
   const { toast } = useToast();
   const [realtimeTraffic, setRealtimeTraffic] = useState([]);
   const [threats, setThreats] = useState([]);
+  const [activeConnectionsCount, setActiveConnectionsCount] = useState(0);
 
+  // Initial data fetching
   const { data: initialTrafficData = [] } = useQuery({
     queryKey: ['trafficData'],
     queryFn: networkService.getTrafficData,
@@ -24,12 +26,6 @@ const Dashboard = () => {
     queryKey: ['recentAlerts'],
     queryFn: networkService.getRecentAlerts,
     refetchInterval: 15000,
-  });
-
-  const { data: activeConnections = 0 } = useQuery({
-    queryKey: ['activeConnections'],
-    queryFn: networkService.getActiveConnections,
-    refetchInterval: 10000,
   });
 
   const { data: blockedIPs = 0 } = useQuery({
@@ -50,20 +46,48 @@ const Dashboard = () => {
     }
 
     // Subscribe to real-time traffic updates
-    const unsubscribeTraffic = wiresharkService.subscribeToPackets((packet) => {
-      console.log('Received packet:', packet);
-      setRealtimeTraffic(current => {
-        const newData = [...current];
-        if (newData.length >= 24) {
-          newData.shift();
+    const trafficChannel = supabase
+      .channel('traffic_updates')
+      .on('postgres_changes', 
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'traffic_data' 
+        },
+        (payload) => {
+          console.log('Received traffic update:', payload);
+          setRealtimeTraffic(current => {
+            const newData = [...current];
+            if (newData.length >= 24) {
+              newData.shift();
+            }
+            newData.push({
+              time: payload.new.time,
+              packets: payload.new.packets
+            });
+            return newData;
+          });
         }
-        newData.push({
-          time: new Date().toISOString(),
-          packets: packet.length || Math.floor(Math.random() * 100) + 50
-        });
-        return newData;
-      });
-    });
+      )
+      .subscribe();
+
+    // Subscribe to real-time active connections updates
+    const connectionsChannel = supabase
+      .channel('connections_updates')
+      .on('postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'active_connections'
+        },
+        (payload) => {
+          console.log('Received connections update:', payload);
+          if (payload.new) {
+            setActiveConnectionsCount(payload.new.count);
+          }
+        }
+      )
+      .subscribe();
 
     const threatChannel = supabase
       .channel('threat_updates')
@@ -99,7 +123,8 @@ const Dashboard = () => {
       });
 
     return () => {
-      unsubscribeTraffic();
+      trafficChannel.unsubscribe();
+      connectionsChannel.unsubscribe();
       threatChannel.unsubscribe();
       wiresharkService.stopCapture()
         .catch(error => {
@@ -152,7 +177,7 @@ const Dashboard = () => {
         </div>
         
         <DashboardLayout
-          activeConnections={activeConnections}
+          activeConnections={activeConnectionsCount}
           recentAlertsCount={recentAlerts.length}
           blockedIPs={blockedIPs}
           trafficData={realtimeTraffic}
