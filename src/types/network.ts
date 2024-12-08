@@ -38,22 +38,24 @@ export interface NetworkThreat {
   location: Location;
 }
 
+export interface NetworkLogMetadata {
+  bytes_transferred?: number;
+  duration?: number;
+  error_code?: string;
+  user_agent?: string;
+  request_path?: string;
+  response_code?: number;
+}
+
 export interface NetworkLog {
   id: number;
   timestamp: string;
   event_type: string;
-  source_ip?: string;
-  destination_ip?: string;
-  protocol?: string;
-  port?: number;
-  status: 'success' | 'warning' | 'error';  // Updated to match what's used in NetworkLogs.tsx
+  source_ip?: string | null;
+  destination_ip?: string | null;
+  protocol?: string | null;
+  port?: number | null;
+  status: 'success' | 'warning' | 'error';
   message: string;
-  metadata?: {
-    bytes_transferred?: number;
-    duration?: number;
-    error_code?: string;
-    user_agent?: string;
-    request_path?: string;
-    response_code?: number;
-  };
+  metadata?: NetworkLogMetadata;
 }

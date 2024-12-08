@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
-import { NetworkLog } from '@/types/network';
+import { NetworkLog, NetworkLogMetadata } from '@/types/network';
+import { Json } from '@/integrations/supabase/types';
 
 export interface NetworkAlert {
   id: number;
@@ -29,6 +30,32 @@ const mapDatabaseStatus = (status: string): NetworkLog['status'] => {
     default:
       return 'warning';
   }
+};
+
+const parseMetadata = (metadata: Json | null): NetworkLogMetadata | undefined => {
+  if (!metadata) return undefined;
+  
+  if (typeof metadata === 'object') {
+    const {
+      bytes_transferred,
+      duration,
+      error_code,
+      user_agent,
+      request_path,
+      response_code
+    } = metadata as Record<string, unknown>;
+
+    return {
+      bytes_transferred: typeof bytes_transferred === 'number' ? bytes_transferred : undefined,
+      duration: typeof duration === 'number' ? duration : undefined,
+      error_code: typeof error_code === 'string' ? error_code : undefined,
+      user_agent: typeof user_agent === 'string' ? user_agent : undefined,
+      request_path: typeof request_path === 'string' ? request_path : undefined,
+      response_code: typeof response_code === 'number' ? response_code : undefined,
+    };
+  }
+  
+  return undefined;
 };
 
 export const networkService = {
@@ -130,10 +157,10 @@ export const networkService = {
         return [];
       }
       
-      // Map the database status to our NetworkLog status type
       return (data || []).map(log => ({
         ...log,
-        status: mapDatabaseStatus(log.status)
+        status: mapDatabaseStatus(log.status),
+        metadata: parseMetadata(log.metadata)
       }));
     } catch (error) {
       console.error('Error fetching network logs:', error);
