@@ -17,46 +17,41 @@ interface TrafficChartProps {
 
 export const TrafficChart = ({ data }: TrafficChartProps) => {
   return (
-    <Card className="p-6 bg-secondary">
-      <h2 className="text-lg font-semibold mb-4 hover:text-primary transition-colors duration-300">Network Traffic (Real-time)</h2>
-      <div className="h-[300px]">
+    <Card className="p-6 bg-gray-800/50 border-gray-700 backdrop-blur-sm">
+      <h2 className="text-lg font-semibold mb-4 text-foreground flex items-center gap-2">
+        <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">
+          Network Traffic (Real-time)
+        </span>
+      </h2>
+      <div className="h-[300px] mt-4">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
             <CartesianGrid 
               strokeDasharray="3 3" 
-              className="hover:opacity-75 transition-opacity duration-300" 
+              stroke="rgba(255,255,255,0.1)"
             />
             <XAxis 
               dataKey="time" 
               tickFormatter={(time) => {
                 const date = new Date(time);
-                return format(date, 'MM/dd HH:mm:ss');
+                return format(date, 'HH:mm:ss');
               }}
-              tick={{
-                className: "hover:fill-primary transition-colors duration-300"
-              }}
+              stroke="rgba(255,255,255,0.5)"
             />
             <YAxis 
-              tick={{
-                className: "hover:fill-primary transition-colors duration-300"
-              }}
+              stroke="rgba(255,255,255,0.5)"
             />
             <Tooltip 
               labelFormatter={(label) => {
                 const date = new Date(label);
-                return `Date: ${format(date, 'MMM dd, yyyy')} Time: ${format(date, 'HH:mm:ss')}`;
+                return `Time: ${format(date, 'HH:mm:ss')}`;
               }}
               contentStyle={{
-                backgroundColor: "#334155",
-                borderColor: "#00A3FF",
-                color: "#FFFFFF"
+                backgroundColor: "rgba(17, 24, 39, 0.9)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "6px",
+                padding: "8px",
               }}
-              labelStyle={{
-                color: "#00A3FF",
-                fontWeight: "bold",
-                transition: "color 0.3s ease"
-              }}
-              // Removed the ":hover" property which was causing the TypeScript error
             />
             <Line
               type="monotone"
@@ -64,11 +59,8 @@ export const TrafficChart = ({ data }: TrafficChartProps) => {
               stroke="#00A3FF"
               strokeWidth={2}
               dot={false}
-              isAnimationActive={false}
-              activeDot={{
-                className: "hover:scale-125 transition-transform duration-300",
-                r: 8
-              }}
+              isAnimationActive={true}
+              animationDuration={300}
             />
           </LineChart>
         </ResponsiveContainer>

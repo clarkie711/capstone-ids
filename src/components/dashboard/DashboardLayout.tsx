@@ -26,7 +26,7 @@ export const DashboardLayout = ({
   onFalsePositive,
 }: DashboardLayoutProps) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <StatsOverview
         activeConnections={activeConnections}
         recentAlertsCount={recentAlertsCount}
@@ -35,7 +35,10 @@ export const DashboardLayout = ({
       
       <TrafficChart data={trafficData} />
       
-      <ResizablePanelGroup direction="vertical" className="min-h-[800px] rounded-lg border">
+      <ResizablePanelGroup 
+        direction="vertical" 
+        className="min-h-[800px] rounded-lg border border-gray-700 bg-gray-800/50 backdrop-blur-sm shadow-xl"
+      >
         <ResizablePanel defaultSize={50}>
           <ScrollArea className="h-[400px]">
             <div className="p-4">
@@ -44,7 +47,7 @@ export const DashboardLayout = ({
           </ScrollArea>
         </ResizablePanel>
         
-        <ResizableHandle withHandle />
+        <ResizableHandle withHandle className="bg-gray-700 hover:bg-primary/50 transition-colors" />
         
         <ResizablePanel defaultSize={50}>
           <ScrollArea className="h-[400px]">

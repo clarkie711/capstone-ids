@@ -26,11 +26,11 @@ export const ThreatCard = ({ threat, onFalsePositive }: ThreatCardProps) => {
   };
 
   return (
-    <div className="flex flex-col bg-background rounded-lg overflow-hidden">
+    <div className="flex flex-col bg-gray-800/50 rounded-lg overflow-hidden border border-gray-700 backdrop-blur-sm transition-all duration-300 hover:bg-gray-800/70">
       <div className="flex items-center justify-between p-4">
         <div className="space-y-2 w-full">
           <div className="flex items-center gap-2">
-            <AlertCircle className="h-4 w-4 text-blue-500" />
+            <AlertCircle className="h-4 w-4 text-red-500" />
             <p className="font-medium text-foreground">{threat.threat_type}</p>
           </div>
           <p className="text-sm text-muted-foreground">
@@ -39,18 +39,18 @@ export const ThreatCard = ({ threat, onFalsePositive }: ThreatCardProps) => {
           <LocationDetails location={threat.location} sourceIp={threat.source_ip} />
         </div>
         <div className="flex items-center gap-4 ml-4">
-          <span className="px-2 py-1 rounded text-xs bg-blue-100 text-blue-800">
+          <span className="px-3 py-1.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-400">
             {Math.round(threat.confidence_score * 100)}% confidence
           </span>
           <button
             onClick={() => onFalsePositive(threat.id)}
-            className="text-sm text-muted-foreground hover:text-foreground"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             Mark as False Positive
           </button>
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground transition-colors"
           >
             {isExpanded ? (
               <ChevronUp className="h-5 w-5" />
@@ -61,7 +61,7 @@ export const ThreatCard = ({ threat, onFalsePositive }: ThreatCardProps) => {
         </div>
       </div>
       {isExpanded && (
-        <div className="px-4 pb-4 border-t border-border">
+        <div className="px-4 pb-4 border-t border-gray-700 animate-fade-in">
           <div className="mt-3 text-sm">
             <h4 className="font-medium mb-2">Scenario Details</h4>
             <p className="text-muted-foreground">{getScenarioDescription(threat)}</p>

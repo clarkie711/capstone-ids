@@ -6,6 +6,7 @@ import { networkService } from "@/services/networkService";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { SimulateAttack } from "@/components/dashboard/SimulateAttack";
 import { UserDropdown } from "@/components/dashboard/UserDropdown";
+import { LayoutDashboard } from "lucide-react";
 
 const Dashboard = () => {
   const { toast } = useToast();
@@ -119,10 +120,15 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-foreground">Network Security Dashboard</h1>
+        <div className="flex items-center justify-between bg-gray-800/50 p-4 rounded-lg shadow-lg backdrop-blur-sm">
+          <div className="flex items-center gap-3">
+            <LayoutDashboard className="h-8 w-8 text-primary" />
+            <h1 className="text-2xl font-bold text-foreground bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">
+              Network Security Dashboard
+            </h1>
+          </div>
           <div className="flex items-center gap-4">
             <SimulateAttack />
             <UserDropdown />
