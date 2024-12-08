@@ -19,13 +19,25 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Generate a random number of active connections (30-60)
-    const simulatedConnections = Math.floor(Math.random() * 31) + 30;
+    // Get current active connections from the database
+    const { data: currentData, error: fetchError } = await supabaseClient
+      .from('active_connections')
+      .select('count')
+      .single();
 
-    // Update the active_connections table
+    if (fetchError) {
+      console.error('Error fetching current connections:', fetchError);
+      throw fetchError;
+    }
+
+    // Update with new count (for now using the existing count until Wireshark is integrated)
     const { error: updateError } = await supabaseClient
       .from('active_connections')
-      .upsert({ id: 1, count: simulatedConnections })
+      .upsert({ 
+        id: 1, 
+        count: currentData?.count || 42,
+        updated_at: new Date().toISOString()
+      })
       .select();
 
     if (updateError) {
@@ -35,7 +47,7 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ 
-        activeConnections: simulatedConnections,
+        success: true,
         message: 'Successfully processed network data'
       }),
       { 
@@ -50,8 +62,7 @@ serve(async (req) => {
     console.error('Error in process-wireshark function:', error);
     return new Response(
       JSON.stringify({ 
-        error: 'Internal server error',
-        details: error.message
+        error: error.message
       }),
       { 
         headers: { 
