@@ -46,7 +46,7 @@ export interface NetworkLog {
   destination_ip?: string;
   protocol?: string;
   port?: number;
-  status: 'success' | 'failure' | 'warning';
+  status: string; // Changed from union type to string to match database
   message: string;
   metadata?: {
     bytes_transferred?: number;

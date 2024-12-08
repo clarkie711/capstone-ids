@@ -30,15 +30,15 @@ serve(async (req) => {
       throw fetchError;
     }
 
-    // Update with new count (for now using the existing count until Wireshark is integrated)
+    // For now, we'll just update the count without Wireshark integration
+    // Later, this is where you'll integrate with Wireshark
     const { error: updateError } = await supabaseClient
       .from('active_connections')
       .upsert({ 
         id: 1, 
         count: currentData?.count || 42,
         updated_at: new Date().toISOString()
-      })
-      .select();
+      });
 
     if (updateError) {
       console.error('Error updating active connections:', updateError);
@@ -48,7 +48,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true,
-        message: 'Successfully processed network data'
+        message: 'Successfully processed network data',
+        connections: currentData?.count || 42
       }),
       { 
         headers: { 
@@ -62,7 +63,7 @@ serve(async (req) => {
     console.error('Error in process-wireshark function:', error);
     return new Response(
       JSON.stringify({ 
-        error: error.message
+        error: error.message || 'An error occurred while processing network data'
       }),
       { 
         headers: { 
