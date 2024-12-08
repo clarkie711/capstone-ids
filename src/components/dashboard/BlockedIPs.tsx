@@ -45,21 +45,25 @@ export const BlockedIPs = () => {
   const { data: blockedIPsData, isLoading, error } = useQuery({
     queryKey: ['blockedIPs'],
     queryFn: async () => {
+      console.log('Fetching blocked IPs...');
       const { data, error } = await supabase
         .from('blocked_ips')
         .select('*')
         .order('blocked_at', { ascending: false });
       
       if (error) {
+        console.error('Error fetching blocked IPs:', error);
         throw error;
       }
-      
-      return data as BlockedIP[];
+
+      console.log('Blocked IPs data:', data);
+      return data || [];
     },
     refetchInterval: 5000,
   });
 
   if (error) {
+    console.error('Query error:', error);
     return (
       <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm">
         <div className="p-4 text-red-500">Error loading blocked IPs</div>
@@ -86,7 +90,7 @@ export const BlockedIPs = () => {
             </div>
           ) : (
             <div className="space-y-3">
-              {blockedIPsData.map((ip) => (
+              {(blockedIPsData as BlockedIP[]).map((ip) => (
                 <BlockedIPEntry key={ip.id} ip={ip} />
               ))}
             </div>
