@@ -11,11 +11,15 @@ interface WiresharkPacket {
 
 export const wiresharkService = {
   async processPackets(packets: WiresharkPacket[]) {
+    console.log('Processing Wireshark packets:', packets);
     const { data, error } = await supabase.functions.invoke('process-wireshark', {
       body: packets,
     });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error processing packets:', error);
+      throw error;
+    }
     return data;
   },
 
@@ -48,6 +52,7 @@ export const wiresharkService = {
   },
 
   subscribeToPackets(callback: (packet: WiresharkPacket) => void) {
+    console.log('Setting up Wireshark packet subscription...');
     const channel = supabase
       .channel('wireshark_packets')
       .on('postgres_changes', {
@@ -55,13 +60,17 @@ export const wiresharkService = {
         schema: 'public',
         table: 'traffic_data'
       }, (payload) => {
+        console.log('Received Wireshark packet:', payload);
         if (payload.new) {
           callback(payload.new as unknown as WiresharkPacket);
         }
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Wireshark subscription status:', status);
+      });
 
     return () => {
+      console.log('Unsubscribing from Wireshark packets...');
       channel.unsubscribe();
     };
   }

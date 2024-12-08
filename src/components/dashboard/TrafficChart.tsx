@@ -22,6 +22,7 @@ export const TrafficChart = ({ data }: TrafficChartProps) => {
   const queryClient = useQueryClient();
 
   const handleRefresh = () => {
+    console.log('Manually refreshing traffic data...');
     queryClient.invalidateQueries({ queryKey: ['trafficData'] });
   };
 
