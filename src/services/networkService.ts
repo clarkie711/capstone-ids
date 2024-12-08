@@ -69,11 +69,11 @@ export const networkService = {
         .from('traffic_data')
         .select('*')
         .order('time', { ascending: true })
-        .limit(50); // Increased limit for better visualization
+        .limit(50);
 
       if (error) {
         console.error('Error fetching traffic data:', error);
-        throw error;
+        return [];
       }
       
       console.log('Received traffic data:', data);
@@ -130,7 +130,7 @@ export const networkService = {
         .select('*', { count: 'exact' });
 
       if (error) {
-        console.error('Error fetching blocked IPs:', error);
+        console.error('Error fetching blocked IPs count:', error);
         return 0;
       }
       
@@ -143,6 +143,7 @@ export const networkService = {
 
   async getNetworkLogs(): Promise<NetworkLog[]> {
     try {
+      console.log('Fetching network logs...');
       const { data, error } = await supabase
         .from('network_logs')
         .select('*')
@@ -154,13 +155,14 @@ export const networkService = {
         return [];
       }
       
+      console.log('Received network logs:', data);
       return (data || []).map(log => ({
         ...log,
         status: mapDatabaseStatus(log.status),
         metadata: parseMetadata(log.metadata)
       }));
     } catch (error) {
-      console.error('Error fetching network logs:', error);
+      console.error('Error in getNetworkLogs:', error);
       return [];
     }
   }
