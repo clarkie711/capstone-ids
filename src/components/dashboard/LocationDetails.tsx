@@ -17,7 +17,7 @@ export const LocationDetails = ({ location }: LocationDetailsProps) => {
   };
 
   const getGoogleMapsUrl = (lat: number, lon: number) => {
-    return `https://www.google.com/maps?q=${lat},${lon}`;
+    return `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
   };
 
   // Debug location data
