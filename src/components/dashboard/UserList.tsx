@@ -2,6 +2,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export const UserList = () => {
   const queryClient = useQueryClient();
@@ -9,6 +17,7 @@ export const UserList = () => {
   const { data: users = [], isLoading: isLoadingUsers } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
+      console.log("Fetching users...");
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
@@ -18,9 +27,9 @@ export const UserList = () => {
         console.error("Error fetching users:", error);
         throw error;
       }
+      console.log("Fetched users:", data);
       return data;
     },
-    refetchInterval: 5000, // Auto refresh every 5 seconds
   });
 
   const handleRefresh = () => {
@@ -40,24 +49,30 @@ export const UserList = () => {
           <RefreshCw className="h-4 w-4" />
         </Button>
       </div>
-      
+
       <div className="border rounded-lg">
-        <div className="grid grid-cols-4 gap-4 p-4 font-medium border-b">
-          <div>Name</div>
-          <div>Username</div>
-          <div>Role</div>
-          <div>Created At</div>
-        </div>
-        <div className="divide-y">
-          {users.map((user) => (
-            <div key={user.id} className="grid grid-cols-4 gap-4 p-4">
-              <div>{user.full_name}</div>
-              <div>{user.username}</div>
-              <div className="capitalize">{user.role}</div>
-              <div>{new Date(user.created_at).toLocaleDateString()}</div>
-            </div>
-          ))}
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Username</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>Created At</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {users.map((user) => (
+              <TableRow key={user.id}>
+                <TableCell>{user.full_name}</TableCell>
+                <TableCell>{user.username}</TableCell>
+                <TableCell className="capitalize">{user.role}</TableCell>
+                <TableCell>
+                  {new Date(user.created_at).toLocaleDateString()}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
