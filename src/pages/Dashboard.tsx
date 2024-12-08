@@ -8,6 +8,11 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { SimulateAttack } from "@/components/dashboard/SimulateAttack";
 import { UserDropdown } from "@/components/dashboard/UserDropdown";
 import { LayoutDashboard } from "lucide-react";
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
+
+type ActiveConnection = Database['public']['Tables']['active_connections']['Row'];
+type TrafficData = Database['public']['Tables']['traffic_data']['Row'];
 
 const Dashboard = () => {
   const { toast } = useToast();
@@ -54,7 +59,7 @@ const Dashboard = () => {
           schema: 'public', 
           table: 'traffic_data' 
         },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<TrafficData>) => {
           console.log('Received traffic update:', payload);
           setRealtimeTraffic(current => {
             const newData = [...current];
@@ -80,7 +85,7 @@ const Dashboard = () => {
           schema: 'public',
           table: 'active_connections'
         },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<ActiveConnection>) => {
           console.log('Received connections update:', payload);
           if (payload.new) {
             setActiveConnectionsCount(payload.new.count);
