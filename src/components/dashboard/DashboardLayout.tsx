@@ -37,10 +37,10 @@ export const DashboardLayout = ({
       
       <ResizablePanelGroup 
         direction="vertical" 
-        className="min-h-[800px] rounded-lg border border-gray-700 bg-gray-800/50 backdrop-blur-sm shadow-xl"
+        className="min-h-[800px] rounded-lg border border-gray-700 bg-gray-800/50 backdrop-blur-sm shadow-xl relative"
       >
         <ResizablePanel defaultSize={50}>
-          <ScrollArea className="h-[400px]">
+          <ScrollArea className="h-[400px] relative z-10">
             <div className="p-4">
               <NetworkLogs logs={networkLogs} />
             </div>
@@ -50,7 +50,7 @@ export const DashboardLayout = ({
         <ResizableHandle withHandle className="bg-gray-700 hover:bg-primary/50 transition-colors" />
         
         <ResizablePanel defaultSize={50}>
-          <ScrollArea className="h-[400px]">
+          <ScrollArea className="h-[400px] relative z-20">
             <div className="p-4">
               <ThreatMonitoring threats={threats} onFalsePositive={onFalsePositive} />
             </div>
