@@ -22,61 +22,54 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Processing Wireshark packets...');
-    
+    const { action } = await req.json();
+    console.log('Processing Wireshark action:', action);
+
     // Create Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    );
 
-    // Parse the request body
-    const packets: WiresharkPacket[] = await req.json()
-    console.log(`Received ${packets.length} packets for processing`);
+    // Execute tshark command to get current connections
+    const command = new Deno.Command("tshark", {
+      args: ["-i", "any", "-a", "duration:1", "-q", "-z", "conv,ip"],
+      stdout: "piped",
+      stderr: "piped",
+    });
 
-    // Process each packet and insert into network_logs
-    const processedLogs = packets.map(packet => ({
-      timestamp: new Date(packet.timestamp),
-      event_type: 'traffic',
-      source_ip: packet.source_ip,
-      destination_ip: packet.destination_ip,
-      protocol: packet.protocol,
-      status: 'success',
-      message: packet.info,
-      metadata: {
-        bytes_transferred: packet.length,
-        source: 'wireshark',
-        capture_type: 'live'
-      }
-    }))
+    try {
+      const { stdout, stderr } = await command.output();
+      const output = new TextDecoder().decode(stdout);
+      const lines = output.split('\n');
+      
+      // Count active connections (excluding header and empty lines)
+      const activeConnections = lines.filter(line => 
+        line.trim() && !line.includes('===') && !line.includes('Conv')
+      ).length;
 
-    console.log('Inserting processed packets into network_logs...');
-    
-    // Batch insert into network_logs
-    const { error } = await supabaseClient
-      .from('network_logs')
-      .insert(processedLogs)
+      // Update the active_connections table
+      await supabaseClient
+        .from('active_connections')
+        .upsert({ id: 1, count: activeConnections })
+        .select();
 
-    if (error) {
-      console.error('Error inserting packets:', error);
+      return new Response(
+        JSON.stringify({ 
+          activeConnections,
+          message: 'Successfully processed Wireshark data'
+        }),
+        { 
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json' 
+          }
+        }
+      );
+    } catch (error) {
+      console.error('Error executing tshark:', error);
       throw error;
     }
-
-    console.log('Successfully processed and stored packets');
-
-    return new Response(
-      JSON.stringify({ 
-        message: 'Packets processed successfully',
-        processed_count: packets.length 
-      }),
-      { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json' 
-        }, 
-        status: 200 
-      }
-    )
 
   } catch (error) {
     console.error('Error in process-wireshark function:', error);
@@ -89,6 +82,6 @@ serve(async (req) => {
         }, 
         status: 400 
       }
-    )
+    );
   }
-})
+});

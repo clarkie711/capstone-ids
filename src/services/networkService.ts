@@ -74,17 +74,38 @@ export const networkService = {
 
   async getActiveConnections(): Promise<number> {
     console.log('Fetching active connections...');
-    const { data, error } = await supabase
-      .from('active_connections')
-      .select('count')
-      .single();
+    try {
+      // Call the Wireshark processing endpoint
+      const { data: wiresharkData, error: wiresharkError } = await supabase.functions.invoke('process-wireshark', {
+        body: { action: 'get-active-connections' }
+      });
 
-    if (error) {
-      console.error('Error fetching active connections:', error);
-      throw error;
+      if (wiresharkError) {
+        console.error('Error fetching Wireshark data:', wiresharkError);
+        throw wiresharkError;
+      }
+
+      // If we successfully got Wireshark data, use it
+      if (wiresharkData && wiresharkData.activeConnections) {
+        return wiresharkData.activeConnections;
+      }
+
+      // Fallback to database if Wireshark integration fails
+      const { data, error } = await supabase
+        .from('active_connections')
+        .select('count')
+        .single();
+
+      if (error) {
+        console.error('Error fetching active connections:', error);
+        throw error;
+      }
+      
+      return data?.count || 0;
+    } catch (error) {
+      console.error('Error in getActiveConnections:', error);
+      return 0;
     }
-    console.log('Active connections fetched:', data);
-    return data?.count || 0;
   },
 
   async getBlockedIPs(): Promise<number> {
