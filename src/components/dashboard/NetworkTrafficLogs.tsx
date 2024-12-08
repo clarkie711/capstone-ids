@@ -33,7 +33,7 @@ export const NetworkTrafficLogs = () => {
       console.error('Error starting capture:', error);
       toast({
         title: "Error",
-        description: "Failed to start network capture. Please check console for details.",
+        description: "Failed to start network capture",
         variant: "destructive",
       });
     }
@@ -42,8 +42,7 @@ export const NetworkTrafficLogs = () => {
   const fetchLogs = async () => {
     try {
       setIsLoading(true);
-      console.log('Fetching network traffic logs...');
-      
+      console.log('Fetching logs...');
       const { data, error } = await supabase
         .from("network_traffic_logs")
         .select("*")
@@ -61,7 +60,7 @@ export const NetworkTrafficLogs = () => {
       console.error("Error fetching logs:", error);
       toast({
         title: "Error",
-        description: "Failed to fetch network traffic logs. Please check console for details.",
+        description: "Failed to fetch network traffic logs",
         variant: "destructive",
       });
     } finally {
@@ -84,14 +83,10 @@ export const NetworkTrafficLogs = () => {
         },
         (payload) => {
           console.log('New log received:', payload);
-          if (payload.new) {
-            setLogs((currentLogs) => [payload.new as NetworkTrafficLog, ...currentLogs]);
-          }
+          setLogs((currentLogs) => [payload.new as NetworkTrafficLog, ...currentLogs]);
         }
       )
-      .subscribe((status) => {
-        console.log('Subscription status:', status);
-      });
+      .subscribe();
 
     return () => {
       console.log('Cleaning up subscription...');
