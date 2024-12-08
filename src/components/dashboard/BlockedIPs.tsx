@@ -86,7 +86,7 @@ export const BlockedIPs = () => {
               No blocked IPs yet
             </div>
           ) : (
-            blockedIPs.map((ip: BlockedIP) => (
+            blockedIPs.map((ip) => (
               <BlockedIPEntry key={ip.id} ip={ip} />
             ))
           )}
