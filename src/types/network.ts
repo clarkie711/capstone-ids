@@ -46,7 +46,7 @@ export interface NetworkLog {
   destination_ip?: string;
   protocol?: string;
   port?: number;
-  status: string; // Changed from union type to string to match database
+  status: 'success' | 'warning' | 'error';  // Updated to match what's used in NetworkLogs.tsx
   message: string;
   metadata?: {
     bytes_transferred?: number;

@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { NetworkLog } from '@/types/network';
 
 export interface NetworkAlert {
   id: number;
@@ -13,30 +14,22 @@ export interface NetworkAlert {
   };
 }
 
-export interface NetworkLog {
-  id: number;
-  timestamp: string;
-  event_type: string;
-  source_ip?: string;
-  destination_ip?: string;
-  protocol?: string;
-  port?: number;
-  status: 'success' | 'failure' | 'warning';
-  message: string;
-  metadata?: {
-    bytes_transferred?: number;
-    duration?: number;
-    error_code?: string;
-    user_agent?: string;
-    request_path?: string;
-    response_code?: number;
-  };
-}
-
 export interface TrafficData {
   time: string;
   packets: number;
 }
+
+const mapDatabaseStatus = (status: string): NetworkLog['status'] => {
+  switch (status.toLowerCase()) {
+    case 'success':
+      return 'success';
+    case 'error':
+    case 'failure':
+      return 'error';
+    default:
+      return 'warning';
+  }
+};
 
 export const networkService = {
   async getTrafficData(): Promise<TrafficData[]> {
@@ -81,7 +74,6 @@ export const networkService = {
 
   async getActiveConnections(): Promise<number> {
     try {
-      // First try to get the current count from the database
       const { data: connectionData, error: connectionError } = await supabase
         .from('active_connections')
         .select('count')
@@ -89,10 +81,9 @@ export const networkService = {
 
       if (connectionError) {
         console.error('Error fetching active connections:', connectionError);
-        return 42; // Default fallback
+        return 42;
       }
 
-      // Process Wireshark data
       const { error: processError } = await supabase.functions.invoke('process-wireshark', {
         body: { action: 'update' }
       });
@@ -139,7 +130,11 @@ export const networkService = {
         return [];
       }
       
-      return data || [];
+      // Map the database status to our NetworkLog status type
+      return (data || []).map(log => ({
+        ...log,
+        status: mapDatabaseStatus(log.status)
+      }));
     } catch (error) {
       console.error('Error fetching network logs:', error);
       return [];
