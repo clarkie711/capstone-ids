@@ -2,7 +2,6 @@ import { StatsOverview } from "./StatsOverview";
 import { TrafficChart } from "./TrafficChart";
 import { ThreatMonitoring } from "./ThreatMonitoring";
 import { NetworkLogs } from "./NetworkLogs";
-import { BlockedIPs } from "./BlockedIPs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { NetworkThreat, NetworkLog } from "@/types/network";
@@ -54,7 +53,6 @@ export const DashboardLayout = ({
           <ScrollArea className="h-[400px] relative z-20 overflow-visible">
             <div className="p-4 space-y-6 overflow-visible">
               <ThreatMonitoring threats={threats} onFalsePositive={onFalsePositive} />
-              <BlockedIPs />
             </div>
           </ScrollArea>
         </ResizablePanel>
