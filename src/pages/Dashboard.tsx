@@ -67,18 +67,19 @@ const Dashboard = () => {
         },
         (payload: RealtimePostgresChangesPayload<TrafficDataRow>) => {
           console.log('Received traffic update:', payload);
-          if (payload.new) {
+          const newData = payload.new;
+          if (newData && typeof newData.id === 'number' && typeof newData.packets === 'number') {
             setRealtimeTraffic(current => {
-              const newData = [...current];
-              if (newData.length >= 24) {
-                newData.shift();
+              const updatedData = [...current];
+              if (updatedData.length >= 24) {
+                updatedData.shift();
               }
-              newData.push({
-                id: payload.new.id,
-                time: payload.new.time || new Date().toISOString(),
-                packets: payload.new.packets
+              updatedData.push({
+                id: newData.id,
+                time: newData.time || new Date().toISOString(),
+                packets: newData.packets
               });
-              return newData;
+              return updatedData;
             });
           }
         }
@@ -96,8 +97,9 @@ const Dashboard = () => {
         },
         (payload: RealtimePostgresChangesPayload<ActiveConnectionRow>) => {
           console.log('Received connections update:', payload);
-          if (payload.new?.count !== undefined) {
-            setActiveConnectionsCount(payload.new.count);
+          const newData = payload.new;
+          if (newData && typeof newData.count === 'number') {
+            setActiveConnectionsCount(newData.count);
           }
         }
       )
