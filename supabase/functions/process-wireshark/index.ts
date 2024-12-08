@@ -9,9 +9,24 @@ const corsHeaders = {
 let isCapturing = false;
 let captureInterval: number | null = null;
 
-// Simulate network traffic when we can't use tshark
+// Enhanced packet simulation with more realistic network patterns
 function generateSimulatedPacket() {
-  return Math.floor(Math.random() * 100) + 50; // Random packet size between 50-150
+  // Base packet size between 64 (minimum Ethernet frame) and 1500 (typical MTU)
+  const baseSize = Math.floor(Math.random() * (1500 - 64)) + 64;
+  
+  // Add some variation based on time of day to simulate real traffic patterns
+  const hour = new Date().getHours();
+  let multiplier = 1;
+  
+  // Simulate higher traffic during business hours
+  if (hour >= 9 && hour <= 17) {
+    multiplier = 1.5;
+  } else if (hour >= 1 && hour <= 5) {
+    // Lower traffic during early morning hours
+    multiplier = 0.5;
+  }
+  
+  return Math.floor(baseSize * multiplier);
 }
 
 serve(async (req) => {
@@ -43,43 +58,48 @@ serve(async (req) => {
       console.log('Starting packet capture simulation...');
       
       if (isCapturing) {
-        console.log('Capture already running');
-        return new Response(
-          JSON.stringify({ success: false, message: 'Capture already running', isRunning: true }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-        );
+        console.log('Capture already running, stopping first...');
+        // Clear existing interval if it exists
+        if (captureInterval !== null) {
+          clearInterval(captureInterval);
+          captureInterval = null;
+        }
+        isCapturing = false;
       }
 
       isCapturing = true;
 
-      // Start simulated packet capture
-      if (captureInterval === null) {
-        captureInterval = setInterval(async () => {
-          if (!isCapturing) {
-            if (captureInterval !== null) {
-              clearInterval(captureInterval);
-              captureInterval = null;
-            }
-            return;
+      // Start simulated packet capture with enhanced error handling
+      captureInterval = setInterval(async () => {
+        if (!isCapturing) {
+          if (captureInterval !== null) {
+            clearInterval(captureInterval);
+            captureInterval = null;
           }
+          return;
+        }
 
-          try {
-            const packetSize = generateSimulatedPacket();
-            const { error } = await supabaseClient
-              .from('traffic_data')
-              .insert([{
-                time: new Date().toISOString(),
-                packets: packetSize
-              }]);
+        try {
+          const packetSize = generateSimulatedPacket();
+          const { error: insertError } = await supabaseClient
+            .from('traffic_data')
+            .insert([{
+              time: new Date().toISOString(),
+              packets: packetSize
+            }]);
 
-            if (error) {
-              console.error('Error inserting traffic data:', error);
-            }
-          } catch (e) {
-            console.error('Error in capture interval:', e);
+          if (insertError) {
+            console.error('Error inserting traffic data:', insertError);
+            throw insertError;
           }
-        }, 1000); // Generate data every second
-      }
+        } catch (e) {
+          console.error('Error in capture interval:', e);
+          // Don't stop capture on single error, just log it
+          if (e instanceof Error) {
+            console.error('Capture error details:', e.message);
+          }
+        }
+      }, 1000); // Generate data every second
 
       return new Response(
         JSON.stringify({ success: true, message: 'Capture started', isRunning: true }),
@@ -117,8 +137,13 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in process-wireshark function:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ 
+        success: false, 
+        error: errorMessage,
+        details: error instanceof Error ? error.stack : undefined
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
