@@ -6,11 +6,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { NetworkTrafficHeader } from "./NetworkTrafficHeader";
 import { NetworkTrafficTable } from "./NetworkTrafficTable";
 import type { NetworkTrafficLog } from "./types";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const NetworkTrafficLogs = () => {
   const [logs, setLogs] = useState<NetworkTrafficLog[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const simulateTraffic = async () => {
     try {
@@ -25,6 +27,9 @@ export const NetworkTrafficLogs = () => {
       }
 
       console.log('Simulation response:', data);
+      // Invalidate traffic data query to trigger a refresh
+      queryClient.invalidateQueries({ queryKey: ['trafficData'] });
+      
       toast({
         title: "Success",
         description: "Network simulation started successfully",
@@ -56,6 +61,8 @@ export const NetworkTrafficLogs = () => {
       
       console.log('Fetched logs:', data);
       setLogs(data || []);
+      // Invalidate traffic data query to ensure graph updates
+      queryClient.invalidateQueries({ queryKey: ['trafficData'] });
     } catch (error) {
       console.error("Error fetching logs:", error);
       toast({
@@ -84,6 +91,8 @@ export const NetworkTrafficLogs = () => {
         (payload) => {
           console.log('New log received:', payload);
           setLogs((currentLogs) => [payload.new as NetworkTrafficLog, ...currentLogs]);
+          // Invalidate traffic data query when new log is received
+          queryClient.invalidateQueries({ queryKey: ['trafficData'] });
         }
       )
       .subscribe();
@@ -92,7 +101,7 @@ export const NetworkTrafficLogs = () => {
       console.log('Cleaning up subscription...');
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [queryClient]);
 
   return (
     <Card className="p-6">

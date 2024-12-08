@@ -27,6 +27,8 @@ export const TrafficChart = ({ data }: TrafficChartProps) => {
     console.log('Manually refreshing traffic data...');
     try {
       await queryClient.invalidateQueries({ queryKey: ['trafficData'] });
+      // Also refresh the network logs to keep everything in sync
+      await queryClient.invalidateQueries({ queryKey: ['networkLogs'] });
       toast({
         title: "Success",
         description: "Traffic data refreshed",
