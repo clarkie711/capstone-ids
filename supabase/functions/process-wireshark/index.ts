@@ -8,6 +8,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -18,10 +19,23 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
+    // Parse the request body
     const { action } = await req.json()
     console.log('Processing simulation action:', action)
 
+    if (!action) {
+      console.error('No action specified')
+      return new Response(
+        JSON.stringify({ success: false, message: 'No action specified' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400 
+        }
+      )
+    }
+
     if (action === 'simulate') {
+      console.log('Starting simulation...')
       // Generate initial simulated packets
       const packets = Array.from({ length: 5 }, () => generateSimulatedPacket())
       
@@ -37,8 +51,8 @@ serve(async (req) => {
         throw error
       }
 
-      // Start periodic packet generation (every 2-5 seconds)
-      setInterval(async () => {
+      // Set up periodic packet generation
+      const interval = setInterval(async () => {
         const newPacket = generateSimulatedPacket()
         console.log('Generated new packet:', newPacket)
         
@@ -49,7 +63,13 @@ serve(async (req) => {
         if (insertError) {
           console.error('Error inserting new packet:', insertError)
         }
-      }, Math.random() * 3000 + 2000)
+      }, Math.random() * 3000 + 2000) // Random interval between 2-5 seconds
+
+      // Clean up interval after 5 minutes
+      setTimeout(() => {
+        clearInterval(interval)
+        console.log('Stopping simulation after 5 minutes')
+      }, 5 * 60 * 1000)
 
       return new Response(
         JSON.stringify({ 
@@ -58,24 +78,19 @@ serve(async (req) => {
           initial_packets: packets 
         }),
         { 
-          headers: { 
-            ...corsHeaders,
-            'Content-Type': 'application/json'
-          }
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
     }
 
+    console.error('Invalid action specified:', action)
     return new Response(
       JSON.stringify({ 
         success: false, 
         message: 'Invalid action specified' 
       }),
       { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400 
       }
     )
@@ -88,10 +103,7 @@ serve(async (req) => {
         error: error instanceof Error ? error.message : 'Unknown error occurred'
       }),
       { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500 
       }
     )
