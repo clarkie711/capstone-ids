@@ -99,7 +99,7 @@ export const BlockedIPs = () => {
 
     return (
       <div className="space-y-3">
-        {blockedIPsData.map((ip) => (
+        {blockedIPsData.map((ip: BlockedIP) => (
           <BlockedIPEntry key={ip.id} ip={ip} />
         ))}
       </div>
