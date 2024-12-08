@@ -40,7 +40,7 @@ export const BlockedIPs = () => {
               No blocked IPs yet
             </div>
           ) : (
-            blockedIPs.map((ip: BlockedIP) => (
+            blockedIPs.map((ip) => (
               <div
                 key={ip.id}
                 className="group rounded-lg border border-gray-700/50 bg-gray-900/30 p-4 transition-all duration-300 hover:bg-gray-800/50 hover:border-gray-600/50"
