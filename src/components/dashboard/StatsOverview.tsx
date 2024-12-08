@@ -3,13 +3,11 @@ import { Card } from "@/components/ui/card";
 
 interface StatsOverviewProps {
   activeConnections: number;
-  recentAlertsCount: number;
   blockedIPs: number;
 }
 
 export const StatsOverview = ({
   activeConnections,
-  recentAlertsCount,
   blockedIPs,
 }: StatsOverviewProps) => {
   return (
