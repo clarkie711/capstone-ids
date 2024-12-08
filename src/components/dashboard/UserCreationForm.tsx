@@ -50,6 +50,16 @@ export const UserCreationForm = ({ onUserCreated }: UserCreationFormProps) => {
           return;
         }
         
+        // Check if the error is a duplicate username error
+        if (error.message.includes('duplicate key value') && error.message.includes('username')) {
+          toast({
+            title: "Error",
+            description: "This username is already taken. Please choose a different username.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
         // Handle other errors
         throw error;
       }
