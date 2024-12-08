@@ -6,4 +6,5 @@ export interface NetworkTrafficLog {
   protocol: string;
   length: number;
   info: string | null;
+  created_at?: string;
 }
