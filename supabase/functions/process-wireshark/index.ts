@@ -6,27 +6,20 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-interface WiresharkPacket {
-  timestamp: string;
-  source_ip: string;
-  destination_ip: string;
-  protocol: string;
-  length: number;
-  info: string;
-}
-
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const { action } = await req.json();
+    console.log('Processing Wireshark action:', action);
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
-
-    const { action, packets } = await req.json();
 
     if (action === 'start') {
       console.log('Starting Wireshark capture simulation...');
@@ -59,38 +52,22 @@ serve(async (req) => {
       );
     }
 
-    // Process incoming packets
-    if (packets && Array.isArray(packets)) {
-      console.log(`Processing ${packets.length} packets...`);
-      
-      const trafficData = packets.map((packet: WiresharkPacket) => ({
-        time: new Date().toISOString(),
-        packets: packet.length
-      }));
-
-      const { error: insertError } = await supabaseClient
-        .from('traffic_data')
-        .insert(trafficData);
-
-      if (insertError) {
-        console.error('Error inserting traffic data:', insertError);
-        throw insertError;
-      }
-    }
-
     return new Response(
       JSON.stringify({ 
-        success: true,
-        message: 'Successfully processed packets'
+        success: false,
+        message: 'Invalid action specified'
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400
+      }
     );
 
   } catch (error) {
     console.error('Error in process-wireshark function:', error);
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'An error occurred while processing packets'
+        error: error.message || 'An error occurred while processing the request'
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 

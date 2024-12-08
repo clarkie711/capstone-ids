@@ -76,7 +76,7 @@ const Dashboard = () => {
               }
               updatedData.push({
                 id: newData.id,
-                time: newData.time?.toISOString() || new Date().toISOString(),
+                time: typeof newData.time === 'string' ? newData.time : new Date().toISOString(),
                 packets: newData.packets
               });
               return updatedData;
