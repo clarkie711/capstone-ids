@@ -42,7 +42,7 @@ export const NetworkTrafficLogs = () => {
   const fetchLogs = async () => {
     try {
       setIsLoading(true);
-      console.log('Fetching simulated logs...');
+      console.log('Fetching network traffic logs...');
       const { data, error } = await supabase
         .from("network_traffic_logs")
         .select("*")
@@ -82,7 +82,7 @@ export const NetworkTrafficLogs = () => {
           table: "network_traffic_logs",
         },
         (payload) => {
-          console.log('New simulated log received:', payload);
+          console.log('New log received:', payload);
           setLogs((currentLogs) => [payload.new as NetworkTrafficLog, ...currentLogs]);
         }
       )

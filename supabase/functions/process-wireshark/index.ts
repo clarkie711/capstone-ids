@@ -20,13 +20,18 @@ serve(async (req) => {
     )
 
     // Parse the request body
-    const { action } = await req.json()
-    console.log('Processing simulation action:', action)
+    const body = await req.json()
+    const action = body?.action
+
+    console.log('Received request with action:', action)
 
     if (!action) {
-      console.error('No action specified')
+      console.error('No action specified in request body')
       return new Response(
-        JSON.stringify({ success: false, message: 'No action specified' }),
+        JSON.stringify({ 
+          success: false, 
+          message: 'No action specified in request body' 
+        }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 400 
@@ -87,7 +92,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: false, 
-        message: 'Invalid action specified' 
+        message: `Invalid action specified: ${action}` 
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
