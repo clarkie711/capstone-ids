@@ -1,8 +1,11 @@
-import { AlertCircle, ChevronDown, ChevronUp, Shield, MapPin, Clock } from "lucide-react";
+import { AlertCircle, ChevronDown, ChevronUp, Shield, MapPin, Clock, Ban } from "lucide-react";
 import { NetworkThreat } from "@/types/network";
 import { LocationDetails } from "./LocationDetails";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ThreatCardProps {
   threat: NetworkThreat;
@@ -11,6 +14,7 @@ interface ThreatCardProps {
 
 export const ThreatCard = ({ threat, onFalsePositive }: ThreatCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { toast } = useToast();
 
   const getScenarioDescription = (threat: NetworkThreat) => {
     const details = threat.details || {};
@@ -30,6 +34,33 @@ export const ThreatCard = ({ threat, onFalsePositive }: ThreatCardProps) => {
     if (score >= 0.7) return "bg-red-500/20 text-red-400 border-red-500/30";
     if (score >= 0.4) return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
     return "bg-blue-500/20 text-blue-400 border-blue-500/30";
+  };
+
+  const handleBlockIP = async () => {
+    try {
+      const { error } = await supabase
+        .from('blocked_ips')
+        .insert([
+          {
+            ip_address: threat.source_ip,
+            reason: `Blocked due to ${threat.threat_type} with ${Math.round(threat.confidence_score * 100)}% confidence`,
+          }
+        ]);
+
+      if (error) throw error;
+
+      toast({
+        title: "IP Blocked Successfully",
+        description: `${threat.source_ip} has been added to the blocked IPs list.`,
+        variant: "default",
+      });
+    } catch (error) {
+      toast({
+        title: "Error Blocking IP",
+        description: "Failed to block the IP address. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -61,7 +92,7 @@ export const ThreatCard = ({ threat, onFalsePositive }: ThreatCardProps) => {
           </div>
         </div>
 
-        <div className="flex items-center gap-4 ml-4">
+        <div className="flex items-center gap-3 ml-4">
           <span className={cn(
             "px-3 py-1.5 rounded-full text-xs font-medium border",
             "transition-colors duration-300",
@@ -69,6 +100,16 @@ export const ThreatCard = ({ threat, onFalsePositive }: ThreatCardProps) => {
           )}>
             {Math.round(threat.confidence_score * 100)}% confidence
           </span>
+          
+          <Button
+            variant="destructive"
+            size="sm"
+            className="gap-2"
+            onClick={handleBlockIP}
+          >
+            <Ban className="h-4 w-4" />
+            Block IP
+          </Button>
           
           <button
             onClick={() => onFalsePositive(threat.id)}
