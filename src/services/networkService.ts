@@ -2,6 +2,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { NetworkLog, NetworkLogMetadata } from '@/types/network';
 import { Json } from '@/integrations/supabase/types';
 
+// Export NetworkLog type to resolve the import error
+export type { NetworkLog };
+
 export interface NetworkAlert {
   id: number;
   type: string;
