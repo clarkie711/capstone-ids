@@ -58,11 +58,10 @@ export const BlockedIPs = () => {
       
       console.log('Raw blocked IPs data:', data);
       
-      // Ensure we're returning an array of properly formatted BlockedIP objects
       const formattedData = (data || []).map((item): BlockedIP => ({
         id: item.id,
         ip_address: item.ip_address,
-        blocked_at: item.blocked_at || '',
+        blocked_at: item.blocked_at,
         reason: item.reason
       }));
       
@@ -99,11 +98,11 @@ export const BlockedIPs = () => {
     }
 
     return (
-      <>
+      <div className="space-y-3">
         {blockedIPsData.map((ip) => (
           <BlockedIPEntry key={ip.id} ip={ip} />
         ))}
-      </>
+      </div>
     );
   };
 
@@ -115,7 +114,7 @@ export const BlockedIPs = () => {
       </div>
       
       <ScrollArea className="h-[300px]">
-        <div className="p-4 space-y-3">
+        <div className="p-4">
           {renderContent()}
         </div>
       </ScrollArea>
