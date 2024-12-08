@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface BlockedIP {
   id: number;
   ip_address: string;
-  blocked_at: string;
+  blocked_at: string | null;
   reason: string | null;
 }
 
@@ -98,9 +98,13 @@ export const BlockedIPs = () => {
       );
     }
 
-    return blockedIPsData.map((ip: BlockedIP) => (
-      <BlockedIPEntry key={ip.id} ip={ip} />
-    ));
+    return (
+      <>
+        {blockedIPsData.map((ip) => (
+          <BlockedIPEntry key={ip.id} ip={ip} />
+        ))}
+      </>
+    );
   };
 
   return (
