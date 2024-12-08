@@ -29,14 +29,14 @@ export const educationalScenarios: SimulationScenario[] = [
     generateLog: (sourceIp: string): NetworkLog => ({
       event_type: 'security',
       source_ip: sourceIp,
-      destination_ip: '192.168.1.1',
+      destination_ip: '192.168.1.1', // Fixed destination IP for demonstration
       protocol: 'TCP',
       port: Math.floor(Math.random() * 65535),
       status: 'warning',
-      message: `Educational simulation: Port scan activity detected from ${sourceIp}`,
+      message: `Educational simulation: Port scan activity detected from ${sourceIp} to 192.168.1.1`,
       metadata: {
         simulation_type: 'port_scan',
-        educational_purpose: 'Network mapping detection demonstration'
+        educational_purpose: 'Network mapping detection demonstration with destination IP'
       }
     })
   },
@@ -53,14 +53,14 @@ export const educationalScenarios: SimulationScenario[] = [
     generateLog: (sourceIp: string): NetworkLog => ({
       event_type: 'security',
       source_ip: sourceIp,
-      destination_ip: '8.8.8.8',
+      // Intentionally omitting destination_ip to demonstrate cases without destination
       protocol: 'UDP',
       port: 53,
       status: 'warning',
-      message: `Educational simulation: Unusual DNS query patterns from ${sourceIp}`,
+      message: `Educational simulation: Unusual DNS query patterns from ${sourceIp} (No destination IP available)`,
       metadata: {
         simulation_type: 'dns_tunneling',
-        educational_purpose: 'Data exfiltration detection demonstration'
+        educational_purpose: 'Data exfiltration detection demonstration without destination IP'
       }
     })
   },
@@ -77,14 +77,14 @@ export const educationalScenarios: SimulationScenario[] = [
     generateLog: (sourceIp: string): NetworkLog => ({
       event_type: 'security',
       source_ip: sourceIp,
-      destination_ip: '192.168.1.100',
+      destination_ip: '192.168.1.100', // Fixed destination IP for demonstration
       protocol: 'HTTP',
       port: 443,
       status: 'warning',
-      message: `Educational simulation: SQL injection pattern detected from ${sourceIp}`,
+      message: `Educational simulation: SQL injection pattern detected from ${sourceIp} to web server`,
       metadata: {
         simulation_type: 'sql_injection',
-        educational_purpose: 'Web attack detection demonstration'
+        educational_purpose: 'Web attack detection demonstration with destination IP'
       }
     })
   },
@@ -101,13 +101,13 @@ export const educationalScenarios: SimulationScenario[] = [
     generateLog: (sourceIp: string): NetworkLog => ({
       event_type: 'security',
       source_ip: sourceIp,
-      destination_ip: '192.168.1.255',
+      // Intentionally omitting destination_ip to demonstrate broadcast nature of ARP
       protocol: 'ARP',
       status: 'warning',
-      message: `Educational simulation: ARP spoofing activity detected from ${sourceIp}`,
+      message: `Educational simulation: ARP spoofing activity detected from ${sourceIp} (Broadcast nature - no specific destination)`,
       metadata: {
         simulation_type: 'arp_spoofing',
-        educational_purpose: 'Network layer attack demonstration'
+        educational_purpose: 'Network layer attack demonstration without destination IP (broadcast)'
       }
     })
   },
@@ -124,14 +124,14 @@ export const educationalScenarios: SimulationScenario[] = [
     generateLog: (sourceIp: string): NetworkLog => ({
       event_type: 'security',
       source_ip: sourceIp,
-      destination_ip: '192.168.1.10',
+      destination_ip: '192.168.1.10', // Fixed destination IP for demonstration
       protocol: ['TCP', 'UDP', 'HTTP'][Math.floor(Math.random() * 3)],
       port: [80, 443, 8080][Math.floor(Math.random() * 3)],
       status: 'warning',
-      message: `Educational simulation: High-volume traffic pattern from ${sourceIp}`,
+      message: `Educational simulation: High-volume traffic pattern from ${sourceIp} targeting main server`,
       metadata: {
         simulation_type: 'ddos',
-        educational_purpose: 'DDoS detection demonstration'
+        educational_purpose: 'DDoS detection demonstration with destination IP'
       }
     })
   }
