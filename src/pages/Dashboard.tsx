@@ -30,13 +30,7 @@ const Dashboard = () => {
   const { data: initialTrafficData = [] } = useQuery({
     queryKey: ['trafficData'],
     queryFn: networkService.getTrafficData,
-    refetchInterval: 5000, // Poll every 5 seconds as backup
-  });
-
-  const { data: recentAlerts = [] } = useQuery({
-    queryKey: ['recentAlerts'],
-    queryFn: networkService.getRecentAlerts,
-    refetchInterval: 15000,
+    refetchInterval: 5000,
   });
 
   const { data: blockedIPs = 0 } = useQuery({
@@ -73,12 +67,12 @@ const Dashboard = () => {
       setRealtimeTraffic(initialTrafficData as TrafficData[]);
     }
 
-    // Subscribe to real-time traffic updates with enhanced logging
+    // Subscribe to real-time traffic updates
     const trafficChannel = supabase
       .channel('traffic_updates')
       .on('postgres_changes', 
         { 
-          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+          event: '*',
           schema: 'public', 
           table: 'traffic_data' 
         },
@@ -88,9 +82,8 @@ const Dashboard = () => {
           if (newData && 'id' in newData && 'packets' in newData) {
             setRealtimeTraffic(current => {
               const updatedData = [...current];
-              // Keep only the last 24 data points for better visualization
               if (updatedData.length >= 24) {
-                updatedData.shift(); // Remove oldest data point
+                updatedData.shift();
               }
               updatedData.push({
                 id: newData.id,
@@ -145,7 +138,6 @@ const Dashboard = () => {
       )
       .subscribe();
 
-    // Cleanup function
     return () => {
       console.log('Cleaning up subscriptions...');
       trafficChannel.unsubscribe();
@@ -203,7 +195,6 @@ const Dashboard = () => {
         
         <DashboardLayout
           activeConnections={activeConnectionsCount}
-          recentAlertsCount={recentAlerts.length}
           blockedIPs={blockedIPs}
           trafficData={realtimeTraffic}
           threats={threats}

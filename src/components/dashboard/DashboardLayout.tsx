@@ -8,7 +8,6 @@ import { NetworkThreat, NetworkLog } from "@/types/network";
 
 interface DashboardLayoutProps {
   activeConnections: number;
-  recentAlertsCount: number;
   blockedIPs: number;
   trafficData: any[];
   threats: NetworkThreat[];
@@ -18,7 +17,6 @@ interface DashboardLayoutProps {
 
 export const DashboardLayout = ({
   activeConnections,
-  recentAlertsCount,
   blockedIPs,
   trafficData,
   threats,
@@ -29,7 +27,6 @@ export const DashboardLayout = ({
     <div className="space-y-6 animate-fade-in">
       <StatsOverview
         activeConnections={activeConnections}
-        recentAlertsCount={recentAlertsCount}
         blockedIPs={blockedIPs}
       />
       
