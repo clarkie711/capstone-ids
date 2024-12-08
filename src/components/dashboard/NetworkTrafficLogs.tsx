@@ -12,28 +12,28 @@ export const NetworkTrafficLogs = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const startCapture = async () => {
+  const simulateTraffic = async () => {
     try {
-      console.log('Starting capture...');
+      console.log('Simulating network traffic...');
       const { data, error } = await supabase.functions.invoke('process-wireshark', {
-        body: { action: 'start' }
+        body: { action: 'simulate' }
       });
 
       if (error) {
-        console.error('Error starting capture:', error);
+        console.error('Error simulating traffic:', error);
         throw error;
       }
 
-      console.log('Capture response:', data);
+      console.log('Simulation response:', data);
       toast({
         title: "Success",
-        description: "Network capture started successfully",
+        description: "Network simulation started successfully",
       });
     } catch (error) {
-      console.error('Error starting capture:', error);
+      console.error('Error in simulation:', error);
       toast({
         title: "Error",
-        description: "Failed to start network capture",
+        description: "Failed to start network simulation",
         variant: "destructive",
       });
     }
@@ -42,7 +42,7 @@ export const NetworkTrafficLogs = () => {
   const fetchLogs = async () => {
     try {
       setIsLoading(true);
-      console.log('Fetching logs...');
+      console.log('Fetching simulated logs...');
       const { data, error } = await supabase
         .from("network_traffic_logs")
         .select("*")
@@ -70,7 +70,7 @@ export const NetworkTrafficLogs = () => {
 
   useEffect(() => {
     fetchLogs();
-    startCapture(); // Start capture when component mounts
+    simulateTraffic(); // Start simulation when component mounts
 
     const channel = supabase
       .channel("network_traffic_logs")
@@ -82,7 +82,7 @@ export const NetworkTrafficLogs = () => {
           table: "network_traffic_logs",
         },
         (payload) => {
-          console.log('New log received:', payload);
+          console.log('New simulated log received:', payload);
           setLogs((currentLogs) => [payload.new as NetworkTrafficLog, ...currentLogs]);
         }
       )

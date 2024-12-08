@@ -19,10 +19,10 @@ serve(async (req) => {
     )
 
     const { action } = await req.json()
-    console.log('Processing Wireshark action:', action)
+    console.log('Processing simulation action:', action)
 
-    if (action === 'start') {
-      // Generate some initial simulated packets
+    if (action === 'simulate') {
+      // Generate initial simulated packets
       const packets = Array.from({ length: 5 }, () => generateSimulatedPacket())
       
       console.log('Generated initial packets:', packets)
@@ -54,7 +54,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           success: true, 
-          message: 'Capture started successfully',
+          message: 'Simulation started successfully',
           initial_packets: packets 
         }),
         { 
