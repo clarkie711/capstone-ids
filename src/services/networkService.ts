@@ -66,7 +66,7 @@ export const networkService = {
     try {
       console.log('Fetching traffic data...');
       console.log('Supabase client initialized:', {
-        url: supabase.getClientUrl(),
+        url: import.meta.env.VITE_SUPABASE_URL,
       });
       
       const { data, error } = await supabase
@@ -159,7 +159,7 @@ export const networkService = {
     try {
       console.log('Fetching network logs...');
       console.log('Supabase client state:', {
-        url: supabase.getClientUrl(),
+        url: import.meta.env.VITE_SUPABASE_URL,
         session: await supabase.auth.getSession(),
       });
 
