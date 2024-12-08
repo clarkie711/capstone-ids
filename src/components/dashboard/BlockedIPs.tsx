@@ -49,9 +49,13 @@ export const BlockedIPs = () => {
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <AlertTriangle className="h-4 w-4 text-red-500" />
-                      <span className="font-medium text-foreground">{ip.ip_address}</span>
+                      <span className="font-medium text-foreground">
+                        {ip.ip_address}
+                      </span>
                     </div>
-                    <p className="text-sm text-muted-foreground">{ip.reason || 'No reason provided'}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {ip.reason || 'No reason provided'}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Clock className="h-3 w-3" />
