@@ -12,11 +12,6 @@ interface BlockedIP {
 }
 
 const BlockedIPEntry = ({ ip }: { ip: BlockedIP }) => {
-  if (!ip || !ip.ip_address) {
-    console.warn('Invalid IP data received:', ip);
-    return null;
-  }
-
   return (
     <div className="group rounded-lg border border-gray-700/50 bg-gray-900/30 p-4 transition-all duration-300 hover:bg-gray-800/50 hover:border-gray-600/50">
       <div className="flex items-start justify-between">
@@ -43,7 +38,7 @@ const BlockedIPEntry = ({ ip }: { ip: BlockedIP }) => {
 };
 
 export const BlockedIPs = () => {
-  const { data: blockedIPs, isLoading, error } = useQuery({
+  const { data: blockedIPsData = [], isLoading, error } = useQuery({
     queryKey: ['blockedIPs'],
     queryFn: async () => {
       console.log('Fetching blocked IPs...');
@@ -57,13 +52,8 @@ export const BlockedIPs = () => {
         throw error;
       }
       
-      if (!data) {
-        console.log('No data returned from query');
-        return [];
-      }
-      
       console.log('Blocked IPs data:', data);
-      return data as BlockedIP[];
+      return Array.isArray(data) ? data : [];
     },
     refetchInterval: 5000,
   });
@@ -77,7 +67,15 @@ export const BlockedIPs = () => {
     );
   }
 
-  const validBlockedIPs = blockedIPs?.filter(ip => ip && ip.ip_address) || [];
+  // Ensure we're working with an array and filter out any invalid entries
+  const blockedIPs = Array.isArray(blockedIPsData) 
+    ? blockedIPsData.filter((ip): ip is BlockedIP => 
+        ip !== null && 
+        typeof ip === 'object' && 
+        'ip_address' in ip && 
+        typeof ip.ip_address === 'string'
+      )
+    : [];
 
   return (
     <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm">
@@ -92,12 +90,12 @@ export const BlockedIPs = () => {
             <div className="text-center text-muted-foreground p-4">
               Loading...
             </div>
-          ) : validBlockedIPs.length === 0 ? (
+          ) : blockedIPs.length === 0 ? (
             <div className="text-center text-muted-foreground p-4">
               No blocked IPs yet
             </div>
           ) : (
-            validBlockedIPs.map((ip) => (
+            blockedIPs.map((ip) => (
               <BlockedIPEntry key={ip.id} ip={ip} />
             ))
           )}
