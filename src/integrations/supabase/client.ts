@@ -5,7 +5,7 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  console.error('Missing Supabase environment variables');
+  throw new Error('Missing Supabase environment variables. Please check your .env file.');
 }
 
 export const supabase = createClient<Database>(
@@ -21,5 +21,11 @@ export const supabase = createClient<Database>(
         'X-Client-Info': 'network-monitor',
       },
     },
+    db: {
+      schema: 'public'
+    }
   }
 );
+
+// Add some debug logging
+console.log('Supabase client initialized with URL:', supabaseUrl);

@@ -112,6 +112,7 @@ export const networkService = {
 
   async getBlockedIPsList() {
     try {
+      console.log('Fetching blocked IPs list...');
       const { data, error } = await supabase
         .from('blocked_ips')
         .select('*')
@@ -122,6 +123,7 @@ export const networkService = {
         return [];
       }
       
+      console.log('Received blocked IPs:', data);
       return data || [];
     } catch (error) {
       console.error('Error in getBlockedIPsList:', error);
