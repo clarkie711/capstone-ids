@@ -16,6 +16,10 @@ export const LocationDetails = ({ location }: LocationDetailsProps) => {
     return `${Math.abs(lat).toFixed(4)}°${lat >= 0 ? 'N' : 'S'}, ${Math.abs(lon).toFixed(4)}°${lon >= 0 ? 'E' : 'W'}`;
   };
 
+  const getGoogleMapsUrl = (lat: number, lon: number) => {
+    return `https://www.google.com/maps?q=${lat},${lon}`;
+  };
+
   return (
     <div className="bg-secondary/50 p-3 rounded-lg space-y-2">
       <div className="flex items-center gap-2">
@@ -67,7 +71,7 @@ export const LocationDetails = ({ location }: LocationDetailsProps) => {
                   Coordinates: {formatCoordinates(location.lat, location.lon)}
                 </span>
                 <a
-                  href={`https://www.google.com/maps?q=${location.lat},${location.lon}`}
+                  href={getGoogleMapsUrl(location.lat, location.lon)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary hover:underline ml-2"
