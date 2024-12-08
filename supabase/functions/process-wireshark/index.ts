@@ -6,15 +6,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-interface WiresharkPacket {
-  timestamp: string;
-  source_ip: string;
-  destination_ip: string;
-  protocol: string;
-  length: number;
-  info: string;
-}
-
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -22,9 +13,6 @@ serve(async (req) => {
   }
 
   try {
-    const { action } = await req.json();
-    console.log('Processing Wireshark action:', action);
-
     // Create Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -49,10 +37,15 @@ serve(async (req) => {
       ).length;
 
       // Update the active_connections table
-      await supabaseClient
+      const { error: updateError } = await supabaseClient
         .from('active_connections')
         .upsert({ id: 1, count: activeConnections })
         .select();
+
+      if (updateError) {
+        console.error('Error updating active connections:', updateError);
+        throw updateError;
+      }
 
       return new Response(
         JSON.stringify({ 
@@ -68,19 +61,35 @@ serve(async (req) => {
       );
     } catch (error) {
       console.error('Error executing tshark:', error);
-      throw error;
+      // Return a more graceful error response
+      return new Response(
+        JSON.stringify({ 
+          error: 'Error processing network data',
+          details: error.message
+        }),
+        { 
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json' 
+          },
+          status: 500
+        }
+      );
     }
 
   } catch (error) {
     console.error('Error in process-wireshark function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: 'Internal server error',
+        details: error.message
+      }),
       { 
         headers: { 
           ...corsHeaders,
           'Content-Type': 'application/json' 
         }, 
-        status: 400 
+        status: 500 
       }
     );
   }
