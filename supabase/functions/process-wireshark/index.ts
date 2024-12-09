@@ -20,24 +20,8 @@ serve(async (req) => {
     )
 
     // Parse the request body
-    const body = await req.json()
-    const action = body?.action
-
+    const { action } = await req.json()
     console.log('Received request with action:', action)
-
-    if (!action) {
-      console.error('No action specified in request body')
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          message: 'No action specified in request body' 
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400 
-        }
-      )
-    }
 
     if (action === 'simulate') {
       console.log('Starting simulation...')

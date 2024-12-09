@@ -16,26 +16,33 @@ export const NetworkTrafficLogs = () => {
 
   const simulateTraffic = async () => {
     try {
-      console.log('Simulating network traffic...');
+      console.log('Starting network traffic simulation...');
       const { data, error } = await supabase.functions.invoke('process-wireshark', {
         body: { action: 'simulate' }
       });
 
       if (error) {
-        console.error('Error simulating traffic:', error);
+        console.error('Error in simulation:', error);
         throw error;
       }
 
       console.log('Simulation response:', data);
-      // Invalidate traffic data query to trigger a refresh
+      
+      if (data?.initial_packets) {
+        console.log('Setting initial packets:', data.initial_packets);
+        setLogs(data.initial_packets);
+      }
+      
+      // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['trafficData'] });
+      queryClient.invalidateQueries({ queryKey: ['networkLogs'] });
       
       toast({
         title: "Success",
         description: "Network simulation started successfully",
       });
     } catch (error) {
-      console.error('Error in simulation:', error);
+      console.error('Simulation error:', error);
       toast({
         title: "Error",
         description: "Failed to start network simulation",
@@ -61,8 +68,6 @@ export const NetworkTrafficLogs = () => {
       
       console.log('Fetched logs:', data);
       setLogs(data || []);
-      // Invalidate traffic data query to ensure graph updates
-      queryClient.invalidateQueries({ queryKey: ['trafficData'] });
     } catch (error) {
       console.error("Error fetching logs:", error);
       toast({
@@ -76,6 +81,7 @@ export const NetworkTrafficLogs = () => {
   };
 
   useEffect(() => {
+    console.log('Setting up network traffic monitoring...');
     fetchLogs();
     simulateTraffic(); // Start simulation when component mounts
 
@@ -89,16 +95,19 @@ export const NetworkTrafficLogs = () => {
           table: "network_traffic_logs",
         },
         (payload) => {
-          console.log('New log received:', payload);
+          console.log('New network traffic log received:', payload);
           setLogs((currentLogs) => [payload.new as NetworkTrafficLog, ...currentLogs]);
-          // Invalidate traffic data query when new log is received
+          // Invalidate queries to refresh data
           queryClient.invalidateQueries({ queryKey: ['trafficData'] });
+          queryClient.invalidateQueries({ queryKey: ['networkLogs'] });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+      });
 
     return () => {
-      console.log('Cleaning up subscription...');
+      console.log('Cleaning up network traffic monitoring...');
       supabase.removeChannel(channel);
     };
   }, [queryClient]);
