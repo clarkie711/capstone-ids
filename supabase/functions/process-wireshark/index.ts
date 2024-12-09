@@ -88,7 +88,6 @@ serve(async (req) => {
       )
     }
 
-    console.error('Invalid action specified:', action)
     return new Response(
       JSON.stringify({ 
         success: false, 
