@@ -17,9 +17,7 @@ export const NetworkTrafficLogs = () => {
   const simulateTraffic = async () => {
     try {
       console.log('Starting network traffic simulation...');
-      const { data, error } = await supabase.functions.invoke('process-wireshark', {
-        body: { action: 'simulate' }
-      });
+      const { data, error } = await supabase.functions.invoke('simulate-network');
 
       if (error) {
         console.error('Error in simulation:', error);
