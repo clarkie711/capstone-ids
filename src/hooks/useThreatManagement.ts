@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { wiresharkService } from "@/services/wiresharkService";
 
 export const useThreatManagement = () => {
   const { toast } = useToast();
@@ -9,19 +8,6 @@ export const useThreatManagement = () => {
 
   useEffect(() => {
     console.log('Setting up threat monitoring...');
-    
-    wiresharkService.startCapture()
-      .then(() => {
-        console.log('Wireshark capture started successfully');
-      })
-      .catch((error) => {
-        console.error('Failed to start Wireshark capture:', error);
-        toast({
-          title: "Error",
-          description: "Failed to start network capture",
-          variant: "destructive",
-        });
-      });
 
     const threatChannel = supabase
       .channel('threat_updates')
@@ -45,10 +31,6 @@ export const useThreatManagement = () => {
     return () => {
       console.log('Cleaning up threat monitoring...');
       threatChannel.unsubscribe();
-      wiresharkService.stopCapture()
-        .catch(error => {
-          console.error('Error stopping Wireshark capture:', error);
-        });
     };
   }, [toast]);
 
