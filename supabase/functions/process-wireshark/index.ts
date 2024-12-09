@@ -26,45 +26,78 @@ serve(async (req) => {
     if (action === 'simulate') {
       console.log('Starting simulation...')
       // Generate initial simulated packets
-      const packets = Array.from({ length: 5 }, () => generateSimulatedPacket())
-      
-      console.log('Generated initial packets:', packets)
+      const initialPackets = Array.from({ length: 10 }, () => generateSimulatedPacket())
+      console.log('Generated initial packets:', initialPackets)
 
-      // Store simulated packets in Supabase
-      const { error } = await supabaseClient
+      // Store initial packets in Supabase
+      const { error: insertError } = await supabaseClient
         .from('network_traffic_logs')
-        .insert(packets)
+        .insert(initialPackets)
 
-      if (error) {
-        console.error('Error inserting packets:', error)
-        throw error
+      if (insertError) {
+        console.error('Error inserting initial packets:', insertError)
+        throw insertError
       }
 
-      // Set up periodic packet generation
+      // Also generate initial traffic data
+      const initialTrafficData = {
+        time: new Date().toISOString(),
+        packets: Math.floor(Math.random() * 100) + 50
+      }
+
+      const { error: trafficError } = await supabaseClient
+        .from('traffic_data')
+        .insert([initialTrafficData])
+
+      if (trafficError) {
+        console.error('Error inserting traffic data:', trafficError)
+        throw trafficError
+      }
+
+      // Set up periodic packet generation (runs for 5 minutes)
+      let packetCount = 0
+      const maxPackets = 300 // 5 minutes * 60 seconds = 300 packets at 1 per second
+      
       const interval = setInterval(async () => {
+        if (packetCount >= maxPackets) {
+          console.log('Reached maximum packets, stopping simulation')
+          clearInterval(interval)
+          return
+        }
+
         const newPacket = generateSimulatedPacket()
         console.log('Generated new packet:', newPacket)
         
-        const { error: insertError } = await supabaseClient
+        const { error: newPacketError } = await supabaseClient
           .from('network_traffic_logs')
           .insert([newPacket])
 
-        if (insertError) {
-          console.error('Error inserting new packet:', insertError)
+        if (newPacketError) {
+          console.error('Error inserting new packet:', newPacketError)
         }
-      }, Math.random() * 3000 + 2000) // Random interval between 2-5 seconds
 
-      // Clean up interval after 5 minutes
-      setTimeout(() => {
-        clearInterval(interval)
-        console.log('Stopping simulation after 5 minutes')
-      }, 5 * 60 * 1000)
+        // Also update traffic data
+        const newTrafficData = {
+          time: new Date().toISOString(),
+          packets: Math.floor(Math.random() * 100) + 50
+        }
+
+        const { error: newTrafficError } = await supabaseClient
+          .from('traffic_data')
+          .insert([newTrafficData])
+
+        if (newTrafficError) {
+          console.error('Error inserting new traffic data:', newTrafficError)
+        }
+
+        packetCount++
+      }, 1000) // Generate a new packet every second
 
       return new Response(
         JSON.stringify({ 
           success: true, 
           message: 'Simulation started successfully',
-          initial_packets: packets 
+          initial_packets: initialPackets
         }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
