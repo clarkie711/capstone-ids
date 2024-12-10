@@ -2,9 +2,8 @@ import { createClient } from '@supabase/supabase-js';
 
 console.log('Initializing Supabase client...');
 
-// Use environment variables if available, otherwise use hardcoded values for development
-const supabaseUrl = 'https://dytxrwaulirfzzfumyvv.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5dHhyd2F1bGlyZnp6ZnVteXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDIyMDY5NzAsImV4cCI6MjAxNzc4Mjk3MH0.qDPHvNxGUE1lrXv3RyGZZ8iHJ9oGfZDNQUvOYVFZQnE';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('Missing Supabase environment variables:', { supabaseUrl, supabaseAnonKey });
@@ -13,4 +12,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 console.log('Supabase client initialized with URL:', supabaseUrl);
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'network-monitor',
+    },
+  },
+});
