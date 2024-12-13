@@ -1,19 +1,17 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Shield, AlertTriangle } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatDistanceToNow } from "date-fns";
+import { SnortAlertHeader } from "./SnortAlertHeader";
+import { SnortAlertRow } from "./SnortAlertRow";
 
 interface SnortAlert {
   id: number;
@@ -84,7 +82,6 @@ export const SnortAlerts = () => {
   useEffect(() => {
     fetchAlerts();
 
-    // Set up real-time subscription
     const channel = supabase
       .channel('snort_alerts_changes')
       .on(
@@ -98,7 +95,6 @@ export const SnortAlerts = () => {
           console.log('New Snort alert received:', payload);
           setAlerts((current) => [payload.new as SnortAlert, ...current]);
           
-          // Show toast notification for high severity alerts
           if ((payload.new as SnortAlert).severity === 'high' || (payload.new as SnortAlert).severity === 'critical') {
             toast({
               title: "High Severity Alert",
@@ -115,36 +111,9 @@ export const SnortAlerts = () => {
     };
   }, [toast]);
 
-  const getSeverityColor = (severity: SnortAlert['severity']) => {
-    switch (severity) {
-      case 'critical':
-        return 'text-red-500';
-      case 'high':
-        return 'text-orange-500';
-      case 'medium':
-        return 'text-yellow-500';
-      default:
-        return 'text-blue-500';
-    }
-  };
-
   return (
     <Card className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2">
-          <Shield className="h-6 w-6 text-primary" />
-          <h2 className="text-xl font-semibold">Snort IDS Alerts</h2>
-        </div>
-        <Button
-          variant="outline"
-          onClick={fetchAlerts}
-          className="gap-2"
-        >
-          <AlertTriangle className="h-4 w-4" />
-          Refresh Alerts
-        </Button>
-      </div>
-
+      <SnortAlertHeader onRefresh={fetchAlerts} />
       <ScrollArea className="h-[500px] rounded-md border">
         <Table>
           <TableHeader>
@@ -160,41 +129,11 @@ export const SnortAlerts = () => {
           </TableHeader>
           <TableBody>
             {alerts.map((alert) => (
-              <TableRow key={alert.id}>
-                <TableCell>
-                  {formatDistanceToNow(new Date(alert.timestamp), { addSuffix: true })}
-                </TableCell>
-                <TableCell>
-                  <span className={`font-semibold ${getSeverityColor(alert.severity)}`}>
-                    {alert.severity.toUpperCase()}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <div className="max-w-[300px] truncate">
-                    {alert.signature_name}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  {alert.source_ip}
-                  {alert.source_port && `:${alert.source_port}`}
-                </TableCell>
-                <TableCell>
-                  {alert.destination_ip}
-                  {alert.destination_port && `:${alert.destination_port}`}
-                </TableCell>
-                <TableCell>{alert.protocol || 'N/A'}</TableCell>
-                <TableCell>
-                  {!alert.false_positive && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => markAsFalsePositive(alert.id)}
-                    >
-                      Mark as False Positive
-                    </Button>
-                  )}
-                </TableCell>
-              </TableRow>
+              <SnortAlertRow
+                key={alert.id}
+                alert={alert}
+                onMarkFalsePositive={markAsFalsePositive}
+              />
             ))}
           </TableBody>
         </Table>
