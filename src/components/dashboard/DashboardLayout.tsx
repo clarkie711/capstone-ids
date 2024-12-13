@@ -3,6 +3,7 @@ import { ThreatMonitoring } from "./ThreatMonitoring";
 import { NetworkLogs } from "./NetworkLogs";
 import { NetworkTrafficLogs } from "./NetworkTrafficLogs";
 import { BlockedIPs } from "./BlockedIPs";
+import { SnortAlerts } from "./SnortAlerts";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { NetworkThreat, NetworkLog } from "@/types/network";
 
@@ -26,6 +27,13 @@ export const DashboardLayout = ({
       <NetworkTrafficLogs />
       
       <div className="space-y-8">
+        {/* Snort Alerts Section */}
+        <div className="rounded-lg border border-gray-700 bg-gray-800/50 backdrop-blur-sm shadow-xl p-4">
+          <ScrollArea className="h-[600px]">
+            <SnortAlerts />
+          </ScrollArea>
+        </div>
+
         {/* Network Logs Section */}
         <div className="rounded-lg border border-gray-700 bg-gray-800/50 backdrop-blur-sm shadow-xl p-4">
           <ScrollArea className="h-[500px]">
