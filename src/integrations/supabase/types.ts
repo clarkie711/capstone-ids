@@ -204,6 +204,69 @@ export type Database = {
         }
         Relationships: []
       }
+      snort_alerts: {
+        Row: {
+          classification: string | null
+          destination_ip: string
+          destination_port: number | null
+          false_positive: boolean | null
+          id: number
+          notes: string | null
+          packet_details: Json | null
+          payload: string | null
+          priority: number | null
+          processed: boolean | null
+          protocol: string | null
+          raw_log: string | null
+          severity: Database["public"]["Enums"]["snort_alert_severity"]
+          signature_id: number
+          signature_name: string
+          source_ip: string
+          source_port: number | null
+          timestamp: string | null
+        }
+        Insert: {
+          classification?: string | null
+          destination_ip: string
+          destination_port?: number | null
+          false_positive?: boolean | null
+          id?: number
+          notes?: string | null
+          packet_details?: Json | null
+          payload?: string | null
+          priority?: number | null
+          processed?: boolean | null
+          protocol?: string | null
+          raw_log?: string | null
+          severity: Database["public"]["Enums"]["snort_alert_severity"]
+          signature_id: number
+          signature_name: string
+          source_ip: string
+          source_port?: number | null
+          timestamp?: string | null
+        }
+        Update: {
+          classification?: string | null
+          destination_ip?: string
+          destination_port?: number | null
+          false_positive?: boolean | null
+          id?: number
+          notes?: string | null
+          packet_details?: Json | null
+          payload?: string | null
+          priority?: number | null
+          processed?: boolean | null
+          protocol?: string | null
+          raw_log?: string | null
+          severity?: Database["public"]["Enums"]["snort_alert_severity"]
+          signature_id?: number
+          signature_name?: string
+          source_ip?: string
+          source_port?: number | null
+          timestamp?: string | null
+        }
+        Relationships: []
+      }
       traffic_analysis: {
         Row: {
           created_at: string | null
@@ -272,6 +335,7 @@ export type Database = {
       }
     }
     Enums: {
+      snort_alert_severity: "low" | "medium" | "high" | "critical"
       user_role: "admin" | "manager" | "user"
     }
     CompositeTypes: {
