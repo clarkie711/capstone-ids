@@ -11,7 +11,7 @@ export const SnortAlertHeader = ({ onRefresh }: SnortAlertHeaderProps) => {
     <div className="flex items-center justify-between mb-6">
       <div className="flex items-center gap-2">
         <Shield className="h-6 w-6 text-primary" />
-        <h2 className="text-xl font-semibold">Snort IDS Alerts</h2>
+        <h2 className="text-xl font-semibold">GeoSecure Watchdog Alerts</h2>
       </div>
       <Button
         variant="outline"

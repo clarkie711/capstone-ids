@@ -45,10 +45,10 @@ export const SnortAlerts = () => {
       if (error) throw error;
       setAlerts(data || []);
     } catch (error) {
-      console.error('Error fetching Snort alerts:', error);
+      console.error('Error fetching GeoSecure Watchdog alerts:', error);
       toast({
         title: "Error",
-        description: "Failed to fetch Snort alerts",
+        description: "Failed to fetch GeoSecure Watchdog alerts",
         variant: "destructive",
       });
     }
@@ -65,15 +65,15 @@ export const SnortAlerts = () => {
 
       toast({
         title: "Success",
-        description: "Alert marked as false positive",
+        description: "GeoSecure Watchdog alert marked as false positive",
       });
       
       fetchAlerts();
     } catch (error) {
-      console.error('Error marking alert as false positive:', error);
+      console.error('Error marking GeoSecure Watchdog alert as false positive:', error);
       toast({
         title: "Error",
-        description: "Failed to update alert",
+        description: "Failed to update GeoSecure Watchdog alert",
         variant: "destructive",
       });
     }
@@ -92,13 +92,13 @@ export const SnortAlerts = () => {
           table: 'snort_alerts',
         },
         (payload) => {
-          console.log('New Snort alert received:', payload);
+          console.log('New GeoSecure Watchdog alert received:', payload);
           setAlerts((current) => [payload.new as SnortAlert, ...current]);
           
           if ((payload.new as SnortAlert).severity === 'high' || (payload.new as SnortAlert).severity === 'critical') {
             toast({
               title: "High Severity Alert",
-              description: `New ${(payload.new as SnortAlert).severity} severity alert detected`,
+              description: `New ${(payload.new as SnortAlert).severity} severity GeoSecure Watchdog alert detected`,
               variant: "destructive",
             });
           }
